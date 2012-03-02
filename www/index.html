@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<meta charset="utf-8">
 
-
+        <link rel="stylesheet" href="jquery/mobile/jquery.mobile-1.1.0-rc.1.min.css" />
+        <script src="jquery/jquery-1.7.1.min.js"></script>
+        <script src="jquery/mobile/jquery.mobile-1.1.0-rc.1.min.js"></script>
+        <link type="text/css" rel="stylesheet" media="screen" href="style.css">
+            
 	<!-- iPad/iPhone specific css below, add after your main css >
 	<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" type="text/css" />		
 	<link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="iphone.css" type="text/css" />		
@@ -14,51 +18,152 @@
 	<!-- If your application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
 	<script type="text/javascript" charset="utf-8" src="phonegap-1.3.0.js"></script>
     <script type="text/javascript" charset="utf-8" src="DB.js"></script>
+    <script type="text/javascript" charset="utf-8" src="GUI.js"></script>
     <script type="text/javascript">
-
-	// If you want to prevent dragging, uncomment this section
-	/* function preventBehavior(e) 
-	{ 
-      e.preventDefault(); 
-    };
-	document.addEventListener("touchmove", preventBehavior, false); */
-
-	/* function handleOpenURL(url)
-	{
-		// TODO: do something with the url passed in.
-	}*/
+                    
+    //navigator.notification.alert("PhoneGap is working")
+    console.log("LOG: Start")
+    // Connect to Database
+    connectToDb();
+    // Insert a law entry into the database
+    insertLaw("BGB", "Bürgerliches Gesetzbuch");
+    // Get law "BGB"
+    getLawByShortcut("BGB");
         
-	function onBodyLoad()
-	{		
-		document.addEventListener("deviceready", onDeviceReady, false);
-	}
-	
-	/* When this function is called, PhoneGap has been initialized and is ready to roll */
-	/* If you are supporting your own protocol, the var invokeString will contain any arguments to the app launch.
-	see http://iphonedevelopertips.com/cocoa/launching-your-own-application-via-a-custom-url-scheme.html
-	for more details -jm */
-	function onDeviceReady()
-	{   
-        //navigator.notification.alert("PhoneGap is working")
-        console.log("LOG: Start")
-        // Connect to Database
-		connectToDb();
-        // Insert a law entry into the database
-        insertLaw("BGB", "Bürgerliches Gesetzbuch");
-        // Get law "BGB"
-        getLawByShortcut("BGB");
         
-	}
     
     </script>
   </head>
   <body onload="onBodyLoad()">
-	<h1>Hey, it's PhoneGap!</h1>
-	<p>Don't know how to get started? Check out <em><a target="_blank" href="http://www.phonegap.com/start#ios-x4">PhoneGap Start</a></em>
-	<br />
-	<ol>
-		<li>Check your console log for any white-list rejection errors.</li>
-		<li>Add your allowed <strong>hosts</strong> in PhoneGap.plist/ExternalHosts (wildcards OK, don't enter the URL scheme)</li>
-	</ol>
+      
+        <!-- H O M E  S C R E E N  -->
+        <div data-role="page" id="home">
+            <div data-role="header">
+              <h1 id="header">Gesetze App</h1>
+              <a class="button slideup" id="infoButton" href="#aboutDiv" data-role="button" data-rel="dialog" data-transition="pop">About</a>
+            </div>
+            <div data-role="content">
+              <h2>Wähle...</h2>
+              <ul class="rounded">
+                  <li><a href="#lawsOverviewDiv" id="lawsOverviewButton" data-role="button">Übersicht</a> </li>
+                  <li><a href="#searchDiv" id="searchButton" data-role="button">Suche</a></li>
+                  <li><a href="#favouritesDiv" id="favouritesButton" data-role="button">Favoriten</a></li>
+                  <li><a href="#configDiv" id="configButton" data-role="button">Einstellungen</a></li>
+              </ul>
+            </div>
+            <div data-role="footer" data-theme="d">
+                  <center><p>Hey, it's PhoneGap!</p></center>
+            </div>
+        </div>
+        
+        
+                <!-- L A W S   O V E R V I E W  -->
+                <div data-role="page" id="lawsOverviewDiv">
+                  <div data-role="header">
+                      <h1 id="lawsHeader">Gesetze</h1>
+                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                  </div>
+                  <div data-role="content">
+                      <ul id="lawsOverview" data-role="listview" data-filter="true" data-filter-placeholder="Gesetz eingeben..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
+                      </ul>
+                </div>
+                  <div data-role="footer" data-theme="d">
+                      <center><p>Hey, it's PhoneGap!</p></center>
+                  </div>
+                </div>
+              
+                        <!-- Single Law Overview  -->
+                        <div data-role="page" id="lawOverviewDiv">
+                          <div data-role="header">
+                              <h1 id="lawHeader">[LawName]</h1>
+                              <a id="backButton" href="#lawsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                          </div>
+                          <div data-role="content">
+                              <ul id="lawOverview" data-role="listview" data-filter="true" data-filter-placeholder="Paragraph eingeben..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
+                              </ul>
+                          </div>
+                          <div data-role="footer" data-theme="d">
+                              <center><p>Hey, it's PhoneGap!</p></center>
+                          </div>
+                        </div>  
+                        <!-- Paragraph  -->      
+                        <div data-role="page" id="ParagraphDiv">
+                          <div data-role="header">
+                              <h1 id="paragraphHeader">[ParagraphName]</h1>
+                              <a id="backButton" href="lawOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                          </div>
+                          <div data-role="content">
+                              <h2>[ParagraphName]</h2>
+                              <ul id="paragraph">
+                              </ul>
+                          </div>
+                          <div data-role="footer" data-theme="d">
+                              <center><p>Hey, it's PhoneGap!</p></center>
+                          </div>
+                        </div>
+                
+                
+                <!-- S E A R C H  -->
+                <div data-role="page" id="searchDiv">
+                  <div data-role="header">
+                      <h1 id="searchHeader">Suche</h1>
+                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                  </div>
+                  <div data-role="content">
+                      <h2>Suche...</h2>
+                  </div>
+                  <div data-role="footer" data-theme="d">
+                      <center><p>Hey, it's PhoneGap!</p></center>
+                  </div>
+                </div>
+              
+                <!-- F A V O U R I T E S  -->
+                <div data-role="page" id="favouritesDiv">
+                  <div data-role="header">
+                      <h1 id="favouritesHeader">Favoriten</h1>
+                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                  </div>
+                  <div data-role="content">
+                      <h2>Favoriten...</h2>
+                  </div>
+                  <div data-role="footer" data-theme="d">
+                      <center><p>Hey, it's PhoneGap!</p></center>
+                  </div>
+                </div>
+                
+                <!-- C O N F I G  -->
+                <div data-role="page" id="configDiv">
+                  <div data-role="header">
+                      <h1 id="configHeader">Einstellungen</h1>
+                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                  </div>
+                  <div data-role="content">
+                      <h2>Einstellungen...</h2>
+                  </div>
+                  <div data-role="footer" data-theme="d">
+                      <center><p>Hey, it's PhoneGap!</p></center>
+                  </div>
+                </div>
+        
+        
+        <!-- A B O U T -->
+        <div data-role="page" id="aboutDiv">
+            <div data-role="header" data-theme="e">
+                <h1>About</h1>
+            </div>
+            <div data-role="content" data-theme="d">
+                <font style="font-size: 170%; font-weight: bold;">Gesetze App</font><br>
+                    <i>Version 0.1b</i><br><br>
+                    Based on:<br>
+                        <a href="http://www.gesetze-im-internet.de">http://www.gesetze-im-internet.de</a><br><br>
+                    Created By:<br>
+                    <ul class="rounded">
+                        <li> <a href="mailto:baris.akar89@googlemail.com">Baris Akar<br><font style="font-size: 70%; font-style:    normal;">baris.akar89@googlemail.com</font></a></li>
+                        <li> <a href="mailto:mittelstaedtmarcel@googlemail.com">Marcel Mittelstädt<br><font style="font-size: 70%; font-style:  normal;">mittelstaedtmarcel@googlemail.com</font></a></li>
+                    </ul>
+                </p>
+                <p><a  href="#home" data-rel="back" data-role="button" data-inline="true" data-icon="back">Close</a></p>
+            </div>
+        </div>      
   </body>
 </html>
