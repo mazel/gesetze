@@ -1,6 +1,11 @@
 function onBodyLoad()
 {		
     document.addEventListener("deviceready", onDeviceReady, false);
+    //alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
+    createCharsList();
+    var date = new Date();
+    console.log(date.getTime());
+    connectToDb();
 }
 
 /* When this function is called, PhoneGap has been initialized and is ready to roll */
@@ -9,18 +14,39 @@ function onBodyLoad()
  for more details -jm */
 function onDeviceReady()
 {          
-    //alert("onDeviceReady");
-    
+    alert("onDeviceReady");
     //transitions flackern auf android, eventuell verschiedene ausprobieren
 	$.mobile.defaultPageTransition = 'none';
 	$.mobile.defaultDialogTransition = 'none';
-	
-	//alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
-    createCharsList();
-    
 }
 
 function createCharsList(lId) {
+    /*alert("test1");
+    if (typeof navigator != 'undefined' && typeof navigator.network != 'undefined') { 
+        alert(navigator.network.connection.type); 
+    } 
+    if (typeof navigator == 'undefined'){ 
+        alert("NAVIGATOR UNDEFINED"); 
+    } 
+    if (typeof navigator.network == 'undefined'){ 
+        alert("NETWORK UNDEFINED"); 
+    } 
+    function checkConnection() {
+        var networkState = navigator.network.connection.type;
+        
+        var states = {};
+        states[Connection.UNKNOWN]  = 'Unknown connection';
+        states[Connection.ETHERNET] = 'Ethernet connection';
+        states[Connection.WIFI]     = 'WiFi connection';
+        states[Connection.CELL_2G]  = 'Cell 2G connection';
+        states[Connection.CELL_3G]  = 'Cell 3G connection';
+        states[Connection.CELL_4G]  = 'Cell 4G connection';
+        states[Connection.NONE]     = 'No network connection';
+        
+        alert('Connection type: ' + states[networkState]);
+    }
+    checkConnection();
+    */
 	var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 	for(var i=0; i<alphabet.length; i++) {
 		var char = alphabet.charAt(i);
@@ -48,10 +74,10 @@ function createParagraphsList(lawName, link){
     fillParagraphsList(lawName, link, "lawOverview", "lawHeader", "paragraphDiv");
 }
 
-function createParagraph(title, lawLink, paragraphLink){
+function createParagraph(title, lawLink, paragraphLink, lawName){
     $('#paragraph').empty();
     $.mobile.changePage('#paragraphDiv');
-    fillParagraph(title, lawLink, paragraphLink, "paragraph", "paragraphHeader");
+    fillParagraph(title, lawLink, paragraphLink, "paragraph", "paragraphHeader", lawName);
 }
 
 function addEntryToLawsList(lId, lawName, state, subHeading, lawLink){

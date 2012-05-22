@@ -4,6 +4,8 @@ var version = '1.0';
 var displayName = 'Laws';
 var maxSize = 5242880;
 
+var checkDBLawsLog = "wupp";
+
 function errorHandler(transaction, error) {
     alert('Error '+error.message+' (Code '+error.code+')');
     return true; // causes a rollback of the transaction
@@ -17,51 +19,269 @@ function connectToDb(){
     db = openDatabase(shortName, version, displayName, maxSize);
     db.transaction(
                    function(transaction) {
+                   /*transaction.executeSql(
+                                          'DROP TABLE sub_paragraphs;'
+                                          );*/
                    transaction.executeSql(
                                           'CREATE TABLE IF NOT EXISTS laws ' +
                                           ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
-                                          ' shortcut TEXT NOT NULL, ' +
-                                          ' name TEXT NOT NULL );'
+                                          ' first_letter TEXT NOT NULL, ' +
+                                          ' name TEXT NOT NULL, ' +
+                                          ' description TEXT NOT NULL, ' +
+                                          ' link TEXT NOT NULL, ' +
+                                          ' date DATE NOT NULL );'
+                                          );
+                   
+                   transaction.executeSql(
+                                          'CREATE TABLE IF NOT EXISTS paragraphs ' +
+                                          ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                                          ' lawName TEXT NOT NULL, ' +
+                                          ' name TEXT NOT NULL, ' +
+                                          ' link TEXT, ' +
+                                          ' p_link TEXT, ' +
+                                          ' seperator BOOLEAN NOT NULL, ' +
+                                          ' date DATE NOT NULL );'
+                                          );
+                   
+                   transaction.executeSql(
+                                          'CREATE TABLE IF NOT EXISTS sub_paragraphs ' +
+                                          ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                                          ' lawName TEXT NOT NULL, ' +
+                                          ' paragraph TEXT NOT NULL, ' +
+                                          ' text TEXT NOT NULL, ' +
+                                          ' date DATE NOT NULL );'
                                           );
                    }
                    );
     console.log("LOG: Connected successful to DB '" + shortName + "'");
 }
 
-function insertLaw(shortcut, name){
+function saveLaw(first_letter, name, description, link){
+    var date = new Date();
     db.transaction(
                    function(transaction) {
                    transaction.executeSql(
-                                          'INSERT INTO laws (shortcut, name) VALUES (?,?);', 
-                                          [shortcut, name], 
+                                          'INSERT INTO laws (first_letter, name, description, link, date) VALUES (?, ?, ?, ?, ?);', 
+                                          [first_letter, name, description, link, date], 
                                           doSomethingHandler, 
                                           errorHandler
                                           );
                    }
                    );
-    console.log("LOG: Law entry " + shortcut + " saved");
+    //console.log("Law entry " + name + " saved");
 }
 
-function printLaws(transaction, result){
-    for (var i=0; i < result.rows.length; i++) {
-        var row = result.rows.item(i);
-        console.log("Entry ID: " + row.id + ", " + row.shortcut + " - " + row.name);
-    }
-}
-
-function getLawByShortcut(shortcut){
+function saveParagraph(lawName, name, link, p_link, seperator){
+    var date = new Date();
     db.transaction(
                    function(transaction) {
                    transaction.executeSql(
-                                          'SELECT * FROM laws WHERE shortcut = ?;', [shortcut],
-                                          printLaws, 
+                                          'INSERT INTO paragraphs (lawName, name, link, p_link, seperator, date) VALUES (?, ?, ?, ?, ?, ?);', 
+                                          [lawName, name, link, p_link, seperator, date], 
+                                          doSomethingHandler, 
                                           errorHandler
                                           );
                    }
                    );
-    /**/
-    console.log("LOG: Entry printed");  
+    //console.log("Paragraph entry " + name + " saved");
 }
+
+function saveSubParagraph(lawName, paragraph, text){
+    var date = new Date();
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'INSERT INTO sub_paragraphs (lawName, paragraph, text, date) VALUES (?, ?, ?, ?);', 
+                                          [lawName, paragraph, text, date], 
+                                          doSomethingHandler, 
+                                          errorHandler
+                                          );
+                   }
+                   );
+    //console.log("SubParagraph ('" + paragraph + "') entry " + text + " saved");
+}
+
+/*function printLaws(transaction, result){
+    for (var i=0; i < result.rows.length; i++) {
+        var row = result.rows.item(i);
+        console.log("Entry ID: " + row.id + ", " + row.name + " - " + row.name);
+    }
+    console.log("i= " + i + ", result rows length: " + result.rows.length);
+}*/
+
+/*function getLawByName(lawName, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT * FROM laws WHERE name = ? LIMIT 1;', [lawName],
+                                          function(transaction, result){ 
+                                          callBack(result.rows.item(0));
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}*/
+
+function getLawsByFirst_Letter(first_letter, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT * FROM laws WHERE first_letter = ?;', [first_letter],
+                                          function(transaction, result){ 
+                                            callBack(result);
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
+function getParagraphsByLaw(lawName, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT * FROM paragraphs WHERE lawName = ?;', [lawName],
+                                          function(transaction, result){ 
+                                          callBack(result);
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
+function getSubParagraphsByLawAndParagraph(lawName, paragraph, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT text FROM sub_paragraphs WHERE lawName = ? AND paragraph = ?;', [lawName, paragraph],
+                                          function(transaction, result){ 
+                                          callBack(result);
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
+function checkDBLaws(first_letter, callBack){
+    db.transaction(
+                   function(transaction) {
+                        transaction.executeSql(
+                                          'SELECT name, date FROM laws WHERE first_letter = ? LIMIT 1;', [first_letter],
+                                          function(transaction, result){ 
+                                            var date = new Date();
+                                            var time = date.getTime;
+                                            for (var i=0; i < result.rows.length; i++) {
+                                                var row = result.rows.item(i);
+                                                var entryDate = new Date(row.date);
+                                                time = entryDate.getTime();
+                                                //console.log("name: " + row.name + time);
+                                            }
+                                          
+                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
+                                                    /*db.transaction(
+                                                                     function(transaction) {
+                                                                     transaction.executeSql(
+                                                                                            'DELETE FROM laws WHERE first_letter = ?;', [first_letter],
+                                                                                            function(transaction, result){ 
+                                                                                                console.log("cleared cache.");
+                                                                                            }
+                                                                                            )
+                                                                     }
+                                                                     )*/
+                                                    console.log("Laws: no entries in DB or entries are not up to date.");
+                                                    callBack(false);
+                                           } else {
+                                                console.log("Laws: entries in DB, entries are up to date.");
+                                                callBack(true);
+                                           }
+                                          },
+                                          errorHandler
+                                          );
+                    }
+                   ); 
+}
+
+function checkDBParagraphs(lawName, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT name, date FROM paragraphs WHERE lawName = ? LIMIT 1;', [lawName],
+                                          function(transaction, result){ 
+                                              var date = new Date();
+                                              var time = date.getTime;
+                                              for (var i=0; i < result.rows.length; i++) {
+                                              var row = result.rows.item(i);
+                                              var entryDate = new Date(row.date);
+                                              time = entryDate.getTime();
+                                              //console.log("name: " + row.name + time);
+                                          }
+                                          
+                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
+                                          /*db.transaction(
+                                                         function(transaction) {
+                                                         transaction.executeSql(
+                                                                                'DELETE FROM paragraphs WHERE lawName = ?;', [lawName],
+                                                                                function(transaction, result){ 
+                                                                                console.log("cleared cache.");
+                                                                                }
+                                                                                )
+                                                         }
+                                                         )*/
+                                          console.log("Paragraphs: no entries in DB or entries are not up to date.");
+                                          callBack(false);
+                                          } else {
+                                          console.log("Paragraphs: entries in DB, entries are up to date.");
+                                          callBack(true);
+                                          }
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
+function checkDBSubParagraphs(lawName, paragraph, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT date FROM sub_paragraphs WHERE lawName = ? AND paragraph = ? LIMIT 1;', [lawName, paragraph],
+                                          function(transaction, result){ 
+                                              var date = new Date();
+                                              var time = date.getTime;
+                                              for (var i=0; i < result.rows.length; i++) {
+                                              var row = result.rows.item(i);
+                                              var entryDate = new Date(row.date);
+                                              time = entryDate.getTime();
+                                              //console.log("name: " + row.name + time);
+                                          }
+                                          
+                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
+                                          /*db.transaction(
+                                                         function(transaction) {
+                                                         transaction.executeSql(
+                                                                                'DELETE FROM sub_paragraphs WHERE lawName = ? AND paragraph = ?;', [lawName, paragraph],
+                                                                                function(transaction, result){ 
+                                                                                console.log("cleared cache.");
+                                                                                }
+                                                                                )
+                                                         }
+                                                         )*/
+                                          console.log("SubParagraphs: no entries in DB or entries are not up to date.");
+                                          callBack(false);
+                                          } else {
+                                          console.log("SubParagraphs: entries in DB, entries are up to date.");
+                                          callBack(true);
+                                          }
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
 
 
 

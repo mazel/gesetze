@@ -3902,7 +3902,6 @@ Connection.prototype.getInfo = function(successCallback, errorCallback) {
     PhoneGap.exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
 };
 
-
 PhoneGap.addConstructor(function() {
     if (typeof navigator.network === "undefined") {
         navigator.network = {};
