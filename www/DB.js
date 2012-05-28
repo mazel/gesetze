@@ -51,6 +51,14 @@ function connectToDb(){
                                           ' text TEXT NOT NULL, ' +
                                           ' date DATE NOT NULL );'
                                           );
+                   
+                   transaction.executeSql(
+                                          'CREATE TABLE IF NOT EXISTS favourites ' +
+                                          ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                                          ' lawName TEXT NOT NULL, ' +
+                                          ' link TEXT NOT NULL );'
+                                          );
+                   
                    }
                    );
     console.log("LOG: Connected successful to DB '" + shortName + "'");
@@ -99,6 +107,44 @@ function saveSubParagraph(lawName, paragraph, text){
                    }
                    );
     //console.log("SubParagraph ('" + paragraph + "') entry " + text + " saved");
+}
+
+function saveFavourite(){
+    var lawName = document.getElementById('lawHeader').innerHTML;
+    var link = document.getElementById('paragraphLi').getAttribute('lawLink');
+    var favButton = document.getElementById('favButton');
+    checkDBFavourites(lawName, function(result){
+        if (result){
+            // Remove Favourite
+              db.transaction(
+                             function(transaction) {
+                             transaction.executeSql(
+                                                    'DELETE FROM favourites WHERE lawName = ?;', [lawName],
+                                                    function(transaction, result){ 
+                                                    console.log("Favourite '" + lawName + "' removed");
+                                                    favButton.setAttribute('style', 'color: #c7c7c7;');
+                                                    }
+                                                    )
+                             }
+                             );            
+        } else {
+            // Insert Favourite
+            db.transaction(
+                           function(transaction) {
+                           transaction.executeSql(
+                                                  'INSERT INTO favourites (lawName, link) VALUES (?, ?);', 
+                                                  [lawName, "."+link], 
+                                                  doSomethingHandler, 
+                                                  errorHandler
+                                                  );
+                           }
+                           );
+            console.log("Favourite '" + lawName + "' saved");
+            favButton.setAttribute('style', 'color: #f18b08;');
+        }
+    });
+    $('#favouritesOverview').empty();
+    fillFavouritesList();
 }
 
 /*function printLaws(transaction, result){
@@ -165,6 +211,20 @@ function getSubParagraphsByLawAndParagraph(lawName, paragraph, callBack){
                    ); 
 }
 
+function getFavourites(callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT * FROM favourites ORDER BY lawName;', [],
+                                          function(transaction, result){ 
+                                          callBack(result);
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
 function checkDBLaws(first_letter, callBack){
     db.transaction(
                    function(transaction) {
@@ -181,7 +241,7 @@ function checkDBLaws(first_letter, callBack){
                                             }
                                           
                                           if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
-                                                    /*db.transaction(
+                                                    db.transaction(
                                                                      function(transaction) {
                                                                      transaction.executeSql(
                                                                                             'DELETE FROM laws WHERE first_letter = ?;', [first_letter],
@@ -190,7 +250,7 @@ function checkDBLaws(first_letter, callBack){
                                                                                             }
                                                                                             )
                                                                      }
-                                                                     )*/
+                                                                   );
                                                     console.log("Laws: no entries in DB or entries are not up to date.");
                                                     callBack(false);
                                            } else {
@@ -220,7 +280,7 @@ function checkDBParagraphs(lawName, callBack){
                                           }
                                           
                                           if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
-                                          /*db.transaction(
+                                          db.transaction(
                                                          function(transaction) {
                                                          transaction.executeSql(
                                                                                 'DELETE FROM paragraphs WHERE lawName = ?;', [lawName],
@@ -229,7 +289,7 @@ function checkDBParagraphs(lawName, callBack){
                                                                                 }
                                                                                 )
                                                          }
-                                                         )*/
+                                                         );
                                           console.log("Paragraphs: no entries in DB or entries are not up to date.");
                                           callBack(false);
                                           } else {
@@ -259,7 +319,7 @@ function checkDBSubParagraphs(lawName, paragraph, callBack){
                                           }
                                           
                                           if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
-                                          /*db.transaction(
+                                          db.transaction(
                                                          function(transaction) {
                                                          transaction.executeSql(
                                                                                 'DELETE FROM sub_paragraphs WHERE lawName = ? AND paragraph = ?;', [lawName, paragraph],
@@ -268,11 +328,31 @@ function checkDBSubParagraphs(lawName, paragraph, callBack){
                                                                                 }
                                                                                 )
                                                          }
-                                                         )*/
+                                                         );
                                           console.log("SubParagraphs: no entries in DB or entries are not up to date.");
                                           callBack(false);
                                           } else {
                                           console.log("SubParagraphs: entries in DB, entries are up to date.");
+                                          callBack(true);
+                                          }
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
+
+function checkDBFavourites(lawName, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT * FROM favourites WHERE lawName = ? LIMIT 1;', [lawName],
+                                          function(transaction, result){ 
+                                          if(result.rows.length == 0) {
+                                          console.log("Favourite does not already exist.");
+                                          callBack(false);
+                                          } else {
+                                          console.log("Favourite already exists.");
                                           callBack(true);
                                           }
                                           },

@@ -33,7 +33,7 @@
             <div data-role="content">
               <a href="#charsOverviewDiv" id="charsOverviewButton" data-role="button">Übersicht</a>
               <a href="#searchDiv" id="searchButton" data-role="button">Suche</a>
-              <a href="#favouritesDiv" id="favouritesButton" data-role="button">Favoriten</a>
+              <a href="#favouritesDiv" class="favouritesButton" id="favouritesButton" data-role="button">Favoriten</a>
               <a href="#configDiv" id="configButton" data-role="button">Einstellungen</a>
             </div>
             <div data-role="footer" data-theme="d">
@@ -60,7 +60,7 @@
 	                <div data-role="page" id="lawsOverviewDiv">
 	                  <div data-role="header">
 	                      <h1 id="lawsHeader">Gesetze</h1>
-	                      <a id="backButton" href="#charsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+	                      <a id="backButtonLaws" href="#charsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
 	                  </div>
 	                  <div data-role="content">
 	                      <ul id="lawsOverview" data-role="listview" data-filter="true" data-filter-placeholder="Suche..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
@@ -75,7 +75,8 @@
 	                        <div data-role="page" id="lawOverviewDiv">
 	                          <div data-role="header">
 	                              <h1 id="lawHeader">[LawName]</h1>
-	                              <a id="backButton" href="#lawsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+	                              <a id="backButtonLaw" href="#lawsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                                  <a id="favButton" style="color: #c7c7c7;" href="" onClick="saveFavourite()">Favorit</a>
 	                          </div>
 	                          <div data-role="content">
 	                              <ul id="lawOverview" data-role="listview" data-filter="true" data-filter-placeholder="Suche..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
@@ -90,7 +91,7 @@
 	                        <div data-role="page" id="paragraphDiv">
 	                          <div data-role="header">
 	                              <h1 id="paragraphHeader">[ParagraphName]</h1>
-	                              <a id="backButton" href="#lawOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+	                              <a id="backButtonParagraph" href="#lawOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
 	                          </div>
 	                          <div data-role="content">
 	                              <ul id="paragraph" data-role="listview">
@@ -123,13 +124,14 @@
                       <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
-                      <h2>Favoriten...</h2>
+                      <ul id="favouritesOverview" data-role="listview" data-filter="true" data-filter-placeholder="Suche..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
+                      </ul>
                   </div>
                   <div data-role="footer" data-theme="d">
                       <center><p>Footer</p></center>
                   </div>
                 </div>
-                
+      
                 <!-- C O N F I G  -->
                 <div data-role="page" id="configDiv">
                   <div data-role="header">

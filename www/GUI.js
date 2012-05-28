@@ -3,6 +3,7 @@ function onBodyLoad()
     document.addEventListener("deviceready", onDeviceReady, false);
     //alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
     createCharsList();
+    $('.favouritesButton').tap(function(){ createFavouritesList()});
     var date = new Date();
     console.log(date.getTime());
     connectToDb();
@@ -68,7 +69,23 @@ function createLawsList(char){
 	fillLawsList(char, "lawsOverview", "lawsHeader", "lawOverviewDiv");
 }
 
-function createParagraphsList(lawName, link){
+function createParagraphsList(lawName, link, fav){
+    // set Back-Button direction  
+    if (fav==1){
+        document.getElementById("backButtonLaw").setAttribute('href', '#favouritesDiv');
+    } else {
+        document.getElementById("backButtonLaw").setAttribute('href', '#lawsOverviewDiv');
+    }
+    // change Favourite-Button color
+    var favButton = document.getElementById('favButton');
+    checkDBFavourites(lawName, function(result){
+      if (result){
+            favButton.setAttribute('style', 'color: #f18b08;');
+        } else {
+            favButton.setAttribute('style', 'color: #c7c7c7;');
+        }
+    });
+    
     $('#lawOverview').empty();
     $.mobile.changePage('#lawOverviewDiv');
     fillParagraphsList(lawName, link, "lawOverview", "lawHeader", "paragraphDiv");
@@ -78,6 +95,12 @@ function createParagraph(title, lawLink, paragraphLink, lawName){
     $('#paragraph').empty();
     $.mobile.changePage('#paragraphDiv');
     fillParagraph(title, lawLink, paragraphLink, "paragraph", "paragraphHeader", lawName);
+}
+
+function createFavouritesList(){
+    $('#favouritesOverview').empty();
+    $.mobile.changePage('#favouritesDiv');
+    fillFavouritesList();
 }
 
 function addEntryToLawsList(lId, lawName, state, subHeading, lawLink){
@@ -95,11 +118,13 @@ function addEntryToLawsList(lId, lawName, state, subHeading, lawLink){
     var newLawSubHeadingFont = document.createElement("font");
     newLawSubHeadingFont.setAttribute('class', 'subheading');
     newLawSubHeadingFont.appendChild(newLawSubHeading);
-    var newLawStateFont = document.createElement("small");
-    newLawStateFont.appendChild(newLawState);
+    var newLawStateDiv = document.createElement("div");
+    newLawStateDiv.setAttribute('class', 'favState');
+    newLawStateDiv.setAttribute('onClick', 'alert("test")');
+    newLawStateDiv.appendChild(newLawState);
     
     newLawLink.appendChild(newLawHeading);
-    newLawLink.appendChild(newLawStateFont);
+    newLawLink.appendChild(newLawStateDiv);
     newLawLink.appendChild(newBr);
     newLawLink.appendChild(newLawSubHeadingFont);
     newLi.appendChild(newLawLink);
@@ -109,6 +134,7 @@ function addEntryToLawsList(lId, lawName, state, subHeading, lawLink){
 function addEntryToParagraphsList(lId, paragraph, state, lawLink, paragraphLink){
     var newLi = document.createElement("li");
     newLi.setAttribute('class', 'paragraphButton');
+    newLi.setAttribute('id', 'paragraphLi');
     newLi.setAttribute('paragraph', paragraph);
     newLi.setAttribute('lawLink', lawLink);
     newLi.setAttribute('paragraphLink', paragraphLink);
@@ -170,4 +196,17 @@ function addMessageToList(lId, message) {
     newLi.appendChild(message);
     
     $('#'+lId).append(newLi);
+}
+
+function addEntryToFavouritesList(lawName, lawLink){
+    var newLi = document.createElement("li");
+    newLi.setAttribute('class', 'favLawButton');
+    newLi.setAttribute('lawName', lawName);
+    newLi.setAttribute('lawLink', lawLink);
+    
+    var newLawHeading = document.createTextNode(lawName);
+    var newLawLink = document.createElement("a");
+    newLawLink.appendChild(newLawHeading);
+    newLi.appendChild(newLawLink);
+    $('#favouritesOverview').append(newLi);    
 }

@@ -24,3 +24,14 @@ div #aboutDiv a {
     color: gray; 
     padding: 0px;
 }
+
+.favState {
+    float: right;
+    font-size: 70%; 
+    font-style: normal; 
+    padding: 0px;
+}
+
+a #favButton {
+    color: #333333;
+}

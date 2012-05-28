@@ -9,7 +9,7 @@ function fillLawsList(char, lId, header, address) {
         console.log("inCache:" + inCache);
         if(inCache){
             console.log("Filling List from Cache.");
-                alert("Filling List from Cache.");
+                //alert("Filling List from Cache.");
                 getLawsByFirst_Letter(char, function(result){
                     for (var i=0; i < result.rows.length; i++) {
                         var row = result.rows.item(i);
@@ -20,7 +20,7 @@ function fillLawsList(char, lId, header, address) {
                         addEntryToLawsList(lId, abbr, "cache", title, link);                 
                         //console.log(lId + ", " + abbr + ", " + "cache" + ", " + title + ", " + link);
                     }
-                    $('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink')); });
+                    $('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 0); });
                                       
                     //refresh listview for correct rendering
                     removeLoaderFromList();
@@ -42,7 +42,7 @@ function fillLawsList(char, lId, header, address) {
                         // console.log(lId + ", " + abbr + ", " + "web" + ", " + title + ", " + link);
 					});
 					
-					$('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink')); });
+					$('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 0); });
 					
 					//refresh listview for correct rendering
 					removeLoaderFromList();
@@ -64,6 +64,7 @@ function fillLawsList(char, lId, header, address) {
 
 function fillParagraphsList(lawName, link, lId, header, address) {
 	$('#'+header).text(lawName);
+    //checkDBFavourite(lawName);
 	
 	addLoaderToList(lId);	
 	$('#'+lId).listview("refresh");
@@ -189,4 +190,23 @@ function fillParagraph(title, lawLink, paragraphLink, lId, header, lawName) {
                         });
                     }
                 });
+}
+
+function fillFavouritesList(){
+    addLoaderToList("favouritesOverview");	
+	$('#favouritesOverview').listview("refresh");
+    console.log("Getting favourites from DB.");
+    var lawName, link;
+    getFavourites(function(result){
+              for (var i=0; i < result.rows.length; i++) {
+                  var row = result.rows.item(i);
+                  lawName = row.lawName;
+                  link = row.link;
+                  addEntryToFavouritesList(lawName, link);
+                  console.log("Added Favourite from DB: " + lawName);
+              }
+                  removeLoaderFromList();
+                  $('#favouritesOverview').listview("refresh");
+                  $('.favLawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 1); });
+    });    
 }
