@@ -18,11 +18,21 @@ div #aboutDiv a {
     text-decoration: none;
 }
 
+.ui-li .ui-btn-text a.ui-link-inherit {
+	white-space: normal;
+}
+
+.ui-header .ui-title, .ui-footer .ui-title {
+    text-overflow: clip;
+    white-space: normal;
+}
+
 .subheading {
     font-size: 70%; 
     font-style: normal; 
     color: gray; 
     padding: 0px;
+    white-space:normal;
 }
 
 .favState {

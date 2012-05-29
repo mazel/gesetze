@@ -5,8 +5,8 @@
   
     <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	
-	<link type="text/css" rel="stylesheet" media="screen" href="style.css" />
 	<link type="text/css" rel="stylesheet" href="jquery/mobile/jquery.mobile-1.0.1.min.css" />
+	<link type="text/css" rel="stylesheet" media="screen" href="style.css" />
             
 	<!-- iPad/iPhone specific css below, add after your main css >
 	<link type="text/css" rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" />		
@@ -14,8 +14,9 @@
 	-->
 
 	<!-- If your application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
-	<script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+	<script type="text/javascript" charset="utf-8" src="phonegap-1.4.1.js"></script>
 	<script type="text/javascript" charset="utf-8" src="jquery/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" charset="utf-8" src="jquery/jquery-mobile-settings.js"></script>
     <script type="text/javascript" charset="utf-8" src="jquery/mobile/jquery.mobile-1.0.1.min.js"></script>
 	<script type="text/javascript" charset="utf-8" src="DB.js"></script>
 	<script type="text/javascript" charset="utf-8" src="Content.js"></script>
@@ -28,7 +29,7 @@
         <div data-role="page" id="home">
             <div data-role="header">
               <h1 id="header">Gesetze App</h1>
-              <a class="button slideup" id="infoButton" href="#aboutDiv" data-role="button" data-rel="dialog" data-transition="pop">About</a>
+              <a class="button slideup" id="infoButton" href="#aboutDiv" data-role="button" data-rel="dialog">&nbsp;&nbsp;&nbsp;Info&nbsp;&nbsp;&nbsp;</a>
             </div>
             <div data-role="content">
               <a href="#charsOverviewDiv" id="charsOverviewButton" data-role="button">Übersicht</a>
@@ -36,38 +37,29 @@
               <a href="#favouritesDiv" class="favouritesButton" id="favouritesButton" data-role="button">Favoriten</a>
               <a href="#configDiv" id="configButton" data-role="button">Einstellungen</a>
             </div>
-            <div data-role="footer" data-theme="d">
-                  <center><p>Footer</p></center>
-            </div>
         </div>
         
                 <!-- C H A R   O V E R V I E W  -->
                 <div data-role="page" id="charsOverviewDiv">
                   <div data-role="header">
                       <h1 id="charsHeader">Übersicht</h1>
-                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                      <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
                       <ul id="charsOverview" data-role="listview" data-theme="d">
                       </ul>
-                </div>
-                  <div data-role="footer" data-theme="d">
-                      <center><p>Footer</p></center>
-                  </div>
+               	  </div>
                 </div>
         
 	                <!-- L A W S   O V E R V I E W  F O R  C H A R -->
 	                <div data-role="page" id="lawsOverviewDiv">
 	                  <div data-role="header">
 	                      <h1 id="lawsHeader">Gesetze</h1>
-	                      <a id="backButtonLaws" href="#charsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+	                      <a id="backButtonLaws" href="#charsOverviewDiv" data-rel="back" data-role="button" data-theme="b">zurück</a>
 	                  </div>
 	                  <div data-role="content">
 	                      <ul id="lawsOverview" data-role="listview" data-filter="true" data-filter-placeholder="Suche..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
 	                      </ul>
-	                </div>
-	                  <div data-role="footer" data-theme="d">
-	                      <center><p>Footer</p></center>
 	                  </div>
 	                </div>
 	              
@@ -75,15 +67,12 @@
 	                        <div data-role="page" id="lawOverviewDiv">
 	                          <div data-role="header">
 	                              <h1 id="lawHeader">[LawName]</h1>
-	                              <a id="backButtonLaw" href="#lawsOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+	                              <a id="backButtonLaw" data-rel="back" data-role="button" data-theme="b">zurück</a>
                                   <a id="favButton" style="color: #c7c7c7;" href="" onClick="saveFavourite()">Favorit</a>
 	                          </div>
 	                          <div data-role="content">
 	                              <ul id="lawOverview" data-role="listview" data-filter="true" data-filter-placeholder="Suche..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
 	                              </ul>
-	                          </div>
-	                          <div data-role="footer" data-theme="d">
-	                              <center><p>Footer</p></center>
 	                          </div>
 	                        </div>  
 	                        
@@ -91,14 +80,11 @@
 	                        <div data-role="page" id="paragraphDiv">
 	                          <div data-role="header">
 	                              <h1 id="paragraphHeader">[ParagraphName]</h1>
-	                              <a id="backButtonParagraph" href="#lawOverviewDiv" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+	                              <a id="backButtonParagraph" data-rel="back" data-role="button" data-theme="b">zurück</a>
 	                          </div>
 	                          <div data-role="content">
 	                              <ul id="paragraph" data-role="listview">
 	                              </ul>
-	                          </div>
-	                          <div data-role="footer" data-theme="d">
-	                              <center><p>Footer</p></center>
 	                          </div>
 	                        </div>
                 
@@ -107,28 +93,48 @@
                 <div data-role="page" id="searchDiv">
                   <div data-role="header">
                       <h1 id="searchHeader">Suche</h1>
-                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                      <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
-                      <h2>Suche...</h2>
-                  </div>
-                  <div data-role="footer" data-theme="d">
-                      <center><p>Footer</p></center>
+                      <ul id="search" data-role="listview">
+                          <li data-role="list-divider">Titelsuche</li>
+                          <li>
+                              <input type="search" name="Titelsuche" id="title-search" value="" placeholder="Suchtext" />
+                          </li>
+                          <li data-role="list-divider">Volltextsuche</li>
+                          <li>
+                              <input type="search" name="Volltextsuche" id="text-search" value="" placeholder="Suchtext" />
+                          </li>
+                          <li data-role="list-divider">Direkteingabe</li>
+                          <li>
+                              <input type="search" name="Gesetz" id="law-search" value="" placeholder="Gesetzeskürzel" />
+                              <input type="search" name="Paragraph" id="paragraph-search" value="" placeholder="Paragraph (optional)" />
+                          </li>
+                      </ul>
                   </div>
                 </div>
+                
+                	<!-- S E A R C H   R E S U L T S  -->
+                	<div data-role="page" id="searchResultDiv">
+	                  <div data-role="header">
+	                      <h1 id="searchResultHeader">Suchergebnisse</h1>
+	                      <a id="backButton" href="#searchDiv" data-rel="back" data-role="button" data-theme="b">zurück</a>
+	                  </div>
+	                  <div data-role="content">
+	                      <ul id="searchResult" data-role="listview" data-filter="true" data-filter-placeholder="Filter..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
+	                      </ul>
+	                  </div>
+	                </div>
               
                 <!-- F A V O U R I T E S  -->
                 <div data-role="page" id="favouritesDiv">
                   <div data-role="header">
                       <h1 id="favouritesHeader">Favoriten</h1>
-                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                      <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
                       <ul id="favouritesOverview" data-role="listview" data-filter="true" data-filter-placeholder="Suche..." data-filter-theme="d"data-theme="d" data-divider-theme="d">
                       </ul>
-                  </div>
-                  <div data-role="footer" data-theme="d">
-                      <center><p>Footer</p></center>
                   </div>
                 </div>
       
@@ -136,13 +142,10 @@
                 <div data-role="page" id="configDiv">
                   <div data-role="header">
                       <h1 id="configHeader">Einstellungen</h1>
-                      <a id="backButton" href="#home" data-direction="reverse" data-role="button" data-theme="b">zurück</a>
+                      <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
                       <h2>Einstellungen...</h2>
-                  </div>
-                  <div data-role="footer" data-theme="d">
-                      <center><p>Footer</p></center>
                   </div>
                 </div>
         
@@ -150,20 +153,20 @@
         <!-- A B O U T -->
         <div data-role="page" id="aboutDiv">
             <div data-role="header" data-theme="e">
-                <h1>About</h1>
+                <h1>Info</h1>
             </div>
             <div data-role="content" data-theme="d">
                 <font style="font-size: 170%; font-weight: bold;">Gesetze App</font><br>
                     <i>Version 0.1b</i><br><br>
-                    Based on:<br>
+                    Inhalte von:<br>
                         <a href="http://www.gesetze-im-internet.de">http://www.gesetze-im-internet.de</a><br><br>
-                    Created By:<br>
+                    Entwickler:<br>
                     <ul class="rounded">
-                        <li> <a href="mailto:baris.akar89@googlemail.com">Baris Akar<br><font style="font-size: 70%; font-style:    normal;">baris.akar89@googlemail.com</font></a></li>
+                        <li> <a href="mailto:akarba@gmx.de">Baris Akar<br><font style="font-size: 70%; font-style:    normal;">akarba@gmx.de</font></a></li>
                         <li> <a href="mailto:mittelstaedtmarcel@googlemail.com">Marcel Mittelstädt<br><font style="font-size: 70%; font-style:  normal;">mittelstaedtmarcel@googlemail.com</font></a></li>
                     </ul>
                 </p>
-                <p><a  href="#home" data-rel="back" data-role="button" data-inline="true" data-icon="back">Close</a></p>
+                <p><a  href="#home" data-rel="back" data-role="button" data-inline="true" data-icon="back">Zurück</a></p>
             </div>
         </div>      
   </body>
