@@ -1,6 +1,7 @@
 #jqt.fullscreen #home .info {
     display: none;
 }
+
 div #aboutDiv {
     padding: 30px 10px 40px;
     text-shadow: rgba(0, 0, 0, 0.3) 0px -1px 0;
@@ -9,19 +10,23 @@ div #aboutDiv {
     text-align: center;
     background: #161618;
 }
+
 div #aboutDiv p {
     margin-bottom: 8px;
 }
+
 div #aboutDiv a {
     color: #fff;
     font-weight: bold;
     text-decoration: none;
 }
 
+/* Mehrzeiliger Text in Listen */
 .ui-li .ui-btn-text a.ui-link-inherit {
 	white-space: normal;
 }
 
+/* Mehrzeiliger Text in Listen-Header */
 .ui-header .ui-title, .ui-footer .ui-title {
     text-overflow: clip;
     white-space: normal;

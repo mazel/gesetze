@@ -1,5 +1,7 @@
 function onBodyLoad()
-{		
+{	
+	// go to start page first without keeping it in browser history
+	$.mobile.changePage('#start', {reverse: false, changeHash: false});
     document.addEventListener("deviceready", onDeviceReady, false);
 }
 
@@ -10,15 +12,23 @@ function onBodyLoad()
 function onDeviceReady()
 {          
     //alert("onDeviceReady");
-
-	connectToDb();
-
-	bindEnterToSearch();
+    
+    connectToDb();
+    
+    initConfigs();
+    
+	bindButtonsAndEnterToSearch();
+	
+	$('#favouritesButton').tap(function(){ createFavouritesList() });
 	
 	//alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
     createCharsList();
     
-    $('.favouritesButton').tap(function(){ createFavouritesList()});
+    //now set the scale size and go to home keeping it in browser history since the actual first page was #home already
+    getSetting('size', function(result){
+		setInterfaceSize(result.rows.item(0).value);
+		$.mobile.changePage('#home', {reverse: false, changeHash: false});
+	});
 }
 
 function createCharsList(lId) {
@@ -34,7 +44,7 @@ function createCharsList(lId) {
     	li.setAttribute('char', char);
 		$('#charsOverview').append(li);  
 	}
-	$('.charButton').tap(function(){ createLawsList($(this).attr('char')); });
+	$('.charButton').click(function(){ createLawsList($(this).attr('char')); });
 }
 
 function createLawsList(char){
@@ -73,7 +83,6 @@ function createParagraph(title, lawLink, paragraphLink, lawName, prevListElement
 
 function createFavouritesList(){
     $('#favouritesOverview').empty();
-    $.mobile.changePage('#favouritesDiv');
     fillFavouritesList();
 }
 
@@ -87,19 +96,16 @@ function addEntryToLawsList(lId, lawName, subHeading, lawLink){
     var newLawSubHeading = document.createTextNode(subHeading);
     var newBr = document.createElement("br");
     
-    var newLawLink = document.createElement("a");
     var newLawSubHeadingFont = document.createElement("font");
     newLawSubHeadingFont.setAttribute('class', 'subheading');
     newLawSubHeadingFont.appendChild(newLawSubHeading);
     var newLawStateDiv = document.createElement("div");
     newLawStateDiv.setAttribute('class', 'favState');
-    newLawStateDiv.setAttribute('onClick', 'alert("test")');
     
-    newLawLink.appendChild(newLawHeading);
-    newLawLink.appendChild(newLawStateDiv);
-    newLawLink.appendChild(newBr);
-    newLawLink.appendChild(newLawSubHeadingFont);
-    newLi.appendChild(newLawLink);
+    newLi.appendChild(newLawHeading);
+    newLi.appendChild(newLawStateDiv);
+    newLi.appendChild(newBr);
+    newLi.appendChild(newLawSubHeadingFont);
     $('#'+lId).append(newLi);    
 }
 
@@ -117,15 +123,13 @@ function addEntryToParagraphsList(lId, paragraph, lawLink, paragraphLink, option
     var newSubHeading = document.createTextNode(optionalText);
     var newBr = document.createElement("br");
     
-    var newLink = document.createElement("a");
     var newSubHeadingFont = document.createElement("font");
     newSubHeadingFont.setAttribute('class', 'subheading');
     newSubHeadingFont.appendChild(newSubHeading);
     
-    newLink.appendChild(newHeading);
-    newLink.appendChild(newBr);
-    newLink.appendChild(newSubHeadingFont);
-    newLi.appendChild(newLink);
+    newLi.appendChild(newHeading);
+    newLi.appendChild(newBr);
+    newLi.appendChild(newSubHeadingFont);
     $('#'+lId).append(newLi);    
 }
 
@@ -146,17 +150,20 @@ function addSeperatorToList(lId, sepName){
     $('#'+lId).append(newLi);
 }
 
+/*
+function addLoaderToList(lId) {
+    $.mobile.showPageLoadingMsg("c", "Lade...");
+}
+
+function removeLoaderFromList() {
+	$.mobile.hidePageLoadingMsg();
+}
+*/
+
 function addLoaderToList(lId) {
 	var newLi = document.createElement("li");
-	//newLi.setAttribute('data-role', 'list-divider');
 	newLi.setAttribute('id', 'loadingList');
-	
-	//gif freezes while parsing
-	//var loader = document.createElement("img");
-    //loader.setAttribute('src', 'jquery/mobile/images/ajax-loader-lists.gif');
-    
     var loader = document.createTextNode("Lade...");
-    
     newLi.appendChild(loader);
     $('#'+lId).append(newLi);
 }
@@ -237,118 +244,65 @@ function addNavButtonsToParagraph(lId, prevListElement, nextListElement) {
     $('#'+lId).append(newLi);
     $('#'+lId).trigger("create");
     
-    $('#prevButton').tap(function(){ prevListElement.trigger('tap'); });
-    $('#nextButton').tap(function(){ nextListElement.trigger('tap'); });
+    $('#prevButton').click(function(){ prevListElement.trigger('click'); });
+    $('#nextButton').click(function(){ nextListElement.trigger('click'); });
 }
 
-function bindEnterToSearch() {
+function bindButtonsAndEnterToSearch() {
+	$('#titleSearchButton').click(function(){
+		var searchtext = $('#title-search').attr("value");
+		if(searchtext=="") {
+			alert("Bitte Suchtext angegeben.");
+		} else {
+			$('#searchResult').empty();
+			$.mobile.changePage('#searchResultDiv');
+			fillSearchList("searchResult", "Titel_bmjhome2005", "and", searchtext);
+		}
+	});
+
 	$('#title-search').live('keypress', function(e) {
 	        if(e.keyCode==13){
-	               var searchtext = $('#title-search').attr("value");
-	               
-	                if(searchtext=="") {
-	                	alert("Bitte Suchtext angegeben.");
-	                } else {
-	                    $('#searchResult').empty();
-    					$.mobile.changePage('#searchResultDiv');
-	                	fillSearchList("searchResult", "Titel_bmjhome2005", "and", searchtext);
-	                }
+				$('#titleSearchButton').trigger('click');
 	        }
+	});
+	
+	$('#textSearchButton').click(function(){
+		var searchtext = $('#text-search').attr("value");
+		if(searchtext=="") {
+			alert("Bitte Suchtext angegeben.");
+		} else {
+			$('#searchResult').empty();
+			$.mobile.changePage('#searchResultDiv');
+			fillSearchList("searchResult", "Gesamt_bmjhome2005", "and", searchtext);
+		}
 	});
 	
 	$('#text-search').live('keypress', function(e) {
 	        if(e.keyCode==13){
-	                var searchtext = $('#text-search').attr("value");
-	                
-	                if(searchtext=="") {
-	                	alert("Bitte Suchtext angegeben.");
-	                } else {
-	                    $('#searchResult').empty();
-    					$.mobile.changePage('#searchResultDiv');
-	                	fillSearchList("searchResult", "Gesamt_bmjhome2005", "and", searchtext);
-	                }
+				$('#textSearchButton').trigger('click');
 	        }
+	});
+	
+	$('#directSearchButton').click(function(){
+		var law = $('#law-search').attr("value");
+		var paragraph = $('#paragraph-search').attr("value");
+	                
+		if(law=="") {
+			alert("Bitte Gesetzeskürzel angegeben.");
+		} else {
+			findLawAndParagraph(law, paragraph);
+		}
 	});
 	
 	$('#law-search').live('keypress', function(e) {
 	        if(e.keyCode==13){
-	                var law = $('#law-search').attr("value");
-	                var paragraph = $('#paragraph-search').attr("value");
-	                
-	                if(law=="") {
-	                	alert("Bitte Gesetzeskürzel angegeben.");
-	                } else {
-	                	findLawAndParagraph(law, paragraph);
-	                }
+				$('#directSearchButton').trigger('click');
 	        }
 	});
 	
 	$('#paragraph-search').live('keyup', function(e) {
 	        if(e.keyCode==13){
-	         		var law = $('#law-search').attr("value");
-	                var paragraph = $('#paragraph-search').attr("value");
-	                
-	                if(law=="") {
-	                	alert("Bitte Gesetzeskürzel angegeben.");
-	                } else {
-	                	findLawAndParagraph(law, paragraph);
-	                }
-	        }
-	});
-}
-
-function bindEnterToSearch() {
-	$('#title-search').live('keypress', function(e) {
-	        if(e.keyCode==13){
-	               var searchtext = $('#title-search').attr("value");
-	               
-	                if(searchtext=="") {
-	                	alert("Bitte Suchtext angegeben.");
-	                } else {
-	                    $('#searchResult').empty();
-    					$.mobile.changePage('#searchResultDiv');
-	                	fillSearchList("searchResult", "Titel_bmjhome2005", "and", searchtext);
-	                }
-	        }
-	});
-	
-	$('#text-search').live('keypress', function(e) {
-	        if(e.keyCode==13){
-	                var searchtext = $('#text-search').attr("value");
-	                
-	                if(searchtext=="") {
-	                	alert("Bitte Suchtext angegeben.");
-	                } else {
-	                    $('#searchResult').empty();
-    					$.mobile.changePage('#searchResultDiv');
-	                	fillSearchList("searchResult", "Gesamt_bmjhome2005", "and", searchtext);
-	                }
-	        }
-	});
-	
-	$('#law-search').live('keypress', function(e) {
-	        if(e.keyCode==13){
-	                var law = $('#law-search').attr("value");
-	                var paragraph = $('#paragraph-search').attr("value");
-	                
-	                if(law=="") {
-	                	alert("Bitte Gesetzeskürzel angegeben.");
-	                } else {
-	                	findLawAndParagraph(law, paragraph);
-	                }
-	        }
-	});
-	
-	$('#paragraph-search').live('keyup', function(e) {
-	        if(e.keyCode==13){
-	         		var law = $('#law-search').attr("value");
-	                var paragraph = $('#paragraph-search').attr("value");
-	                
-	                if(law=="") {
-	                	alert("Bitte Gesetzeskürzel angegeben.");
-	                } else {
-	                	findLawAndParagraph(law, paragraph);
-	                }
+				$('#directSearchButton').trigger('click');
 	        }
 	});
 }

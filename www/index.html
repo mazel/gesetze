@@ -3,9 +3,10 @@
   <head>
   <title></title>
   
-    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	
-	<link type="text/css" rel="stylesheet" href="jquery/mobile/jquery.mobile-1.0.1.min.css" />
+  	<!-- pinch to zoom may not work on all devices -->
+    <meta charset="utf-8" id="viewportMeta" name="viewport" content="width=device-width, height=device-height, initial-scale=1.2, minimum-scale=0.8, maximum-scale=1.7, user-scalable=yes"/>
+ 
+	<link type="text/css" rel="stylesheet" href="jquery/mobile/jquery.mobile-1.1.0.min.css" />
 	<link type="text/css" rel="stylesheet" media="screen" href="style.css" />
             
 	<!-- iPad/iPhone specific css below, add after your main css >
@@ -14,30 +15,39 @@
 	-->
 
 	<!-- If your application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
-	<script type="text/javascript" charset="utf-8" src="phonegap-1.4.1.js"></script>
+	<script type="text/javascript" charset="utf-8" src="cordova-1.7.0.js"></script>
 	<script type="text/javascript" charset="utf-8" src="jquery/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" charset="utf-8" src="jquery/jquery-mobile-settings.js"></script>
-    <script type="text/javascript" charset="utf-8" src="jquery/mobile/jquery.mobile-1.0.1.min.js"></script>
+	<script type="text/javascript" charset="utf-8" src="mobileinit.js"></script>
+    <script type="text/javascript" charset="utf-8" src="jquery/mobile/jquery.mobile-1.1.0.min.js"></script>
 	<script type="text/javascript" charset="utf-8" src="DB.js"></script>
 	<script type="text/javascript" charset="utf-8" src="Content.js"></script>
+	<script type="text/javascript" charset="utf-8" src="Config.js"></script>
 	<script type="text/javascript" charset="utf-8" src="GUI.js"></script>
   </head>
   
   <body onload="onBodyLoad()">
-      
+  
         <!-- H O M E  S C R E E N  -->
         <div data-role="page" id="home">
-            <div data-role="header">
+            <div data-role="header" data-backbtn="false">
               <h1 id="header">Gesetze App</h1>
               <a class="button slideup" id="infoButton" href="#aboutDiv" data-role="button" data-rel="dialog">&nbsp;&nbsp;&nbsp;Info&nbsp;&nbsp;&nbsp;</a>
             </div>
             <div data-role="content">
               <a href="#charsOverviewDiv" id="charsOverviewButton" data-role="button">Übersicht</a>
               <a href="#searchDiv" id="searchButton" data-role="button">Suche</a>
-              <a href="#favouritesDiv" class="favouritesButton" id="favouritesButton" data-role="button">Favoriten</a>
+              <a href="#favouritesDiv" id="favouritesButton" data-role="button">Favoriten</a>
               <a href="#configDiv" id="configButton" data-role="button">Einstellungen</a>
             </div>
         </div>
+        
+        <!-- (empty) starting page to avoid showing scaling effect -->
+  		<!-- HOME will be shown after viewport scale is set -->
+  		<div data-role="page" id="start">
+  			<!-- <div style="position: absolute; top: 50%; left: 50%; margin-top: -50px; margin-left: -90px ;">
+  				<h1 align="center">Gesetze App</h1>
+    		</div> -->
+  		</div>
         
                 <!-- C H A R   O V E R V I E W  -->
                 <div data-role="page" id="charsOverviewDiv">
@@ -45,7 +55,7 @@
                       <h1 id="charsHeader">Übersicht</h1>
                       <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
-                  <div data-role="content">
+                  <div data-role="content" >
                       <ul id="charsOverview" data-role="listview" data-theme="d">
                       </ul>
                	  </div>
@@ -96,19 +106,22 @@
                       <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
-                      <ul id="search" data-role="listview">
+                      <ul id="search" data-role="listview" data-split-icon="search">
                           <li data-role="list-divider">Titelsuche</li>
                           <li>
-                              <input type="search" name="Titelsuche" id="title-search" value="" placeholder="Suchtext" />
+                              <a><input type="text" name="Titelsuche" id="title-search" value="" placeholder="Suchtext" /></a>
+                              <a id="titleSearchButton">Suchen</a>
                           </li>
                           <li data-role="list-divider">Volltextsuche</li>
                           <li>
-                              <input type="search" name="Volltextsuche" id="text-search" value="" placeholder="Suchtext" />
+                              <a><input type="text" name="Volltextsuche" id="text-search" value="" placeholder="Suchtext" /></a>
+                              <a id="textSearchButton">Suchen</a>
                           </li>
                           <li data-role="list-divider">Direkteingabe</li>
                           <li>
-                              <input type="search" name="Gesetz" id="law-search" value="" placeholder="Gesetzeskürzel" />
-                              <input type="search" name="Paragraph" id="paragraph-search" value="" placeholder="Paragraph (optional)" />
+                              <a><input type="text" name="Gesetz" id="law-search" value="" placeholder="Gesetzeskürzel" />
+                              <input type="text" name="Paragraph" id="paragraph-search" value="" placeholder="Paragraph (optional)" /></a>
+                              <a id="directSearchButton">Suchen</a>
                           </li>
                       </ul>
                   </div>
@@ -145,9 +158,95 @@
                       <a id="backButton" href="#home" data-rel="back" data-role="button" data-theme="b">zurück</a>
                   </div>
                   <div data-role="content">
-                      <h2>Einstellungen...</h2>
+					<ul id="configList" data-role="listview" data-split-icon="gear">
+						<li data-role="list-divider">Oberfläche</li>
+						<li>
+							<a>
+								Anzeige
+								<span class="ui-li-aside" id="sizeText">normal</span>
+							</a>
+							<a href="#sizeDiv">Ändern</a>
+						</li>
+						<li data-role="list-divider">Caching</li>
+						<li>
+							<a>
+								Caching
+								<span class="ui-li-aside" id="cachingText">ein</span>
+							</a>
+							<a id="cachingButton">Ändern</a>
+						</li>
+						<li>
+							<a>
+								Caching Dauer
+								<span class="ui-li-aside" id="cachingDurationText">7 Tage</span>
+							</a>
+							<a href="#cachingDurationDiv">Ändern</a>
+						</li>
+						<li>
+							<a>
+								Cache leeren
+							</a>
+							<a data-icon="delete" href="#clearCacheDiv">Leeren</a>
+						</li>
+						<li data-role="list-divider">Favoriten</li>
+						<li>
+							<a>
+								Favoriten leeren
+							</a>
+							<a data-icon="delete" href="#clearFavDiv">Leeren</a>
+						</li>
                   </div>
                 </div>
+                
+                <div data-role="dialog" id="sizeDiv">
+					<div data-role="header">
+						<h1>Anzeigegröße</h1>	
+					</div>
+					<div data-role="content">
+						<a class="sizeButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="0">sehr klein</a>
+						<a class="sizeButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="1">klein</a>
+						<a class="sizeButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="2">normal</a>
+						<a class="sizeButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="3">groß</a>
+						<a class="sizeButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="4">sehr groß</a>        
+						<a href="#configDiv" data-role="button" data-rel="back" data-theme="c">Abbrechen</a>    
+					</div>
+				</div>
+				
+				<div data-role="dialog" id="cachingDurationDiv">
+					<div data-role="header">
+						<h1>Caching Dauer</h1>	
+					</div>
+					<div data-role="content">
+						<a class="cachingDurationButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="1">1 Tag</a>
+						<a class="cachingDurationButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="4">4 Tage</a>
+						<a class="cachingDurationButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="7">1 Woche</a>
+						<a class="cachingDurationButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="14">2 Wochen</a>       
+						<a class="cachingDurationButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b" name="30">1 Monat</a>  
+						<a href="#configDiv" data-role="button" data-rel="back" data-theme="c">Abbrechen</a>    
+					</div>
+				</div>
+                
+                <div data-role="dialog" id="clearCacheDiv">
+					<div data-role="header">
+						<h1>Aktion bestätigen</h1>	
+					</div>
+					<div data-role="content">
+						<h3>Gesamten Cache leeren?</h3>
+						<a id="clearCacheButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b">Cache leeren</a>       
+						<a href="#configDiv" data-role="button" data-rel="back" data-theme="c">Abbrechen</a>    
+					</div>
+				</div>
+				
+				<div data-role="dialog" id="clearFavDiv">
+					<div data-role="header">
+						<h1>Aktion bestätigen</h1>	
+					</div>
+					<div data-role="content">
+						<h3>Alle Favoriten löschen?</h3>
+						<a id="clearFavButton" href="#configDiv" data-role="button" data-rel="back" data-theme="b">Favoriten löschen</a>       
+						<a href="#configDiv" data-role="button" data-rel="back" data-theme="c">Abbrechen</a>    
+					</div>
+				</div>
         
         
         <!-- A B O U T -->

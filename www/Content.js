@@ -47,7 +47,7 @@ function fillLawsList(char, lId, header, address) {
                         addEntryToLawsList(lId, abbr, title, link);                 
                         //console.log(lId + ", " + abbr + ", " + "cache" + ", " + title + ", " + link);
                     }
-                    $('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 0); });
+                    $('.lawButton').click(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 0); });
                                       
                     //refresh listview for correct rendering
                     removeLoaderFromList();
@@ -76,7 +76,7 @@ function fillLawsList(char, lId, header, address) {
                         // console.log(lId + ", " + abbr + ", " + "web" + ", " + title + ", " + link);
 					});
 					
-					$('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 0); });
+					$('.lawButton').click(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 0); });
 					
 					//refresh listview for correct rendering
 					removeLoaderFromList();
@@ -127,7 +127,7 @@ function fillParagraphsList(lawName, link, lId, header, address) {
                         //console.log("Added Para "+lId+", "+title+", "+"cache"+", "+link+", "+paragraphLink);
                     }
                 }
-            $('.paragraphButton').tap(function(){ createParagraph($(this).attr('paragraph'), $(this).attr('lawLink'), $(this).attr('paragraphLink'), lawName, $(this).prevAll('.paragraphButton').first(), $(this).nextAll('.paragraphButton').first()); });
+            $('.paragraphButton').click(function(){ createParagraph($(this).attr('paragraph'), $(this).attr('lawLink'), $(this).attr('paragraphLink'), lawName, $(this).prevAll('.paragraphButton').first(), $(this).nextAll('.paragraphButton').first()); });
              
             //refresh listview for correct rendering
             removeLoaderFromList();
@@ -162,7 +162,7 @@ function fillParagraphsList(lawName, link, lId, header, address) {
                                 }
                             });
                             
-                            $('.paragraphButton').tap(function(){ createParagraph($(this).attr('paragraph'), $(this).attr('lawLink'), $(this).attr('paragraphLink'), lawName, $(this).prevAll('.paragraphButton').first(), $(this).nextAll('.paragraphButton').first()); });
+                            $('.paragraphButton').click(function(){ createParagraph($(this).attr('paragraph'), $(this).attr('lawLink'), $(this).attr('paragraphLink'), lawName, $(this).prevAll('.paragraphButton').first(), $(this).nextAll('.paragraphButton').first()); });
                             
                             //refresh listview for correct rendering
                             removeLoaderFromList();
@@ -273,7 +273,7 @@ function fillFavouritesList(){
               }
                   removeLoaderFromList();
                   $('#favouritesOverview').listview("refresh");
-                  $('.favLawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 1); });
+                  $('.favLawButton').click(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink'), 1); });
     });  
 }
   
@@ -311,14 +311,14 @@ function fillSearchList(lId, config, method, words, optionalLink) {
 							}
 					});
 					
-					$('.lawButton').tap(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink')); });
-					$('.paragraphButton').tap(function(){ createParagraph($(this).attr('paragraph'), $(this).attr('lawLink'), $(this).attr('paragraphLink'), ''); });
+					$('.lawButton').click(function(){ createParagraphsList($(this).attr('lawName'), $(this).attr('lawLink')); });
+					$('.paragraphButton').click(function(){ createParagraph($(this).attr('paragraph'), $(this).attr('lawLink'), $(this).attr('paragraphLink'), ''); });
 					
 					//more results button
 					if ( $(data).find('#paddingLR12').children('a').last().children('img').length > 0 ) {
 						next = $(data).find('#paddingLR12').children('a').last().attr('href');
 						addNextButtonToList(lId, "Weitere Treffer");
-						$('#nextButton').tap(function(){ $('#nextButton').remove(); fillSearchList(lId, '', '', '', next); });
+						$('#nextButton').click(function(){ $('#nextButton').remove(); fillSearchList(lId, '', '', '', next); });
 					}
 					
 					//refresh listview for correct rendering
