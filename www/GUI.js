@@ -1,12 +1,8 @@
 function onBodyLoad()
-{		
+{	
+	// go to start page first without keeping it in browser history
+	$.mobile.changePage('#start', {reverse: false, changeHash: false});
     document.addEventListener("deviceready", onDeviceReady, false);
-    //alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
-    createCharsList();
-    $('.favouritesButton').tap(function(){ createFavouritesList()});
-    var date = new Date();
-    console.log(date.getTime());
-    connectToDb();
 }
 
 /* When this function is called, PhoneGap has been initialized and is ready to roll */
@@ -15,39 +11,27 @@ function onBodyLoad()
  for more details -jm */
 function onDeviceReady()
 {          
-    alert("onDeviceReady");
-    //transitions flackern auf android, eventuell verschiedene ausprobieren
-	$.mobile.defaultPageTransition = 'none';
-	$.mobile.defaultDialogTransition = 'none';
+    //alert("onDeviceReady");
+    
+    connectToDb();
+    
+    initConfigs();
+    
+	bindButtonsAndEnterToSearch();
+	
+	$('#favouritesButton').tap(function(){ createFavouritesList() });
+	
+	//alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
+    createCharsList();
+    
+    //now set the scale size and go to home keeping it in browser history since the actual first page was #home already
+    getSetting('size', function(result){
+		setInterfaceSize(result.rows.item(0).value);
+		$.mobile.changePage('#home', {reverse: false, changeHash: false});
+	});
 }
 
 function createCharsList(lId) {
-    /*alert("test1");
-    if (typeof navigator != 'undefined' && typeof navigator.network != 'undefined') { 
-        alert(navigator.network.connection.type); 
-    } 
-    if (typeof navigator == 'undefined'){ 
-        alert("NAVIGATOR UNDEFINED"); 
-    } 
-    if (typeof navigator.network == 'undefined'){ 
-        alert("NETWORK UNDEFINED"); 
-    } 
-    function checkConnection() {
-        var networkState = navigator.network.connection.type;
-        
-        var states = {};
-        states[Connection.UNKNOWN]  = 'Unknown connection';
-        states[Connection.ETHERNET] = 'Ethernet connection';
-        states[Connection.WIFI]     = 'WiFi connection';
-        states[Connection.CELL_2G]  = 'Cell 2G connection';
-        states[Connection.CELL_3G]  = 'Cell 3G connection';
-        states[Connection.CELL_4G]  = 'Cell 4G connection';
-        states[Connection.NONE]     = 'No network connection';
-        
-        alert('Connection type: ' + states[networkState]);
-    }
-    checkConnection();
-    */
 	var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 	for(var i=0; i<alphabet.length; i++) {
 		var char = alphabet.charAt(i);
@@ -60,7 +44,7 @@ function createCharsList(lId) {
     	li.setAttribute('char', char);
 		$('#charsOverview').append(li);  
 	}
-	$('.charButton').tap(function(){ createLawsList($(this).attr('char')); });
+	$('.charButton').click(function(){ createLawsList($(this).attr('char')); });
 }
 
 function createLawsList(char){
@@ -91,47 +75,43 @@ function createParagraphsList(lawName, link, fav){
     fillParagraphsList(lawName, link, "lawOverview", "lawHeader", "paragraphDiv");
 }
 
-function createParagraph(title, lawLink, paragraphLink, lawName){
+function createParagraph(title, lawLink, paragraphLink, lawName, prevListElement, nextListElement){
     $('#paragraph').empty();
     $.mobile.changePage('#paragraphDiv');
-    fillParagraph(title, lawLink, paragraphLink, "paragraph", "paragraphHeader", lawName);
+    fillParagraph(title, lawLink, paragraphLink, "paragraph", "paragraphHeader", lawName, prevListElement, nextListElement);
 }
 
 function createFavouritesList(){
     $('#favouritesOverview').empty();
-    $.mobile.changePage('#favouritesDiv');
     fillFavouritesList();
 }
 
-function addEntryToLawsList(lId, lawName, state, subHeading, lawLink){
+function addEntryToLawsList(lId, lawName, subHeading, lawLink){
     var newLi = document.createElement("li");
     newLi.setAttribute('class', 'lawButton');
     newLi.setAttribute('lawName', lawName);
     newLi.setAttribute('lawLink', lawLink);
     
     var newLawHeading = document.createTextNode(lawName);
-    var newLawState = document.createTextNode(state);
     var newLawSubHeading = document.createTextNode(subHeading);
     var newBr = document.createElement("br");
     
-    var newLawLink = document.createElement("a");
     var newLawSubHeadingFont = document.createElement("font");
     newLawSubHeadingFont.setAttribute('class', 'subheading');
     newLawSubHeadingFont.appendChild(newLawSubHeading);
     var newLawStateDiv = document.createElement("div");
     newLawStateDiv.setAttribute('class', 'favState');
-    newLawStateDiv.setAttribute('onClick', 'alert("test")');
-    newLawStateDiv.appendChild(newLawState);
     
-    newLawLink.appendChild(newLawHeading);
-    newLawLink.appendChild(newLawStateDiv);
-    newLawLink.appendChild(newBr);
-    newLawLink.appendChild(newLawSubHeadingFont);
-    newLi.appendChild(newLawLink);
+    newLi.appendChild(newLawHeading);
+    newLi.appendChild(newLawStateDiv);
+    newLi.appendChild(newBr);
+    newLi.appendChild(newLawSubHeadingFont);
     $('#'+lId).append(newLi);    
 }
 
-function addEntryToParagraphsList(lId, paragraph, state, lawLink, paragraphLink){
+function addEntryToParagraphsList(lId, paragraph, lawLink, paragraphLink, optionalText){
+	optionalText = typeof optionalText !== 'undefined' ? optionalText : "";
+
     var newLi = document.createElement("li");
     newLi.setAttribute('class', 'paragraphButton');
     newLi.setAttribute('id', 'paragraphLi');
@@ -140,17 +120,16 @@ function addEntryToParagraphsList(lId, paragraph, state, lawLink, paragraphLink)
     newLi.setAttribute('paragraphLink', paragraphLink);
     
     var newHeading = document.createTextNode(paragraph);
-    var newState = document.createTextNode(state);
+    var newSubHeading = document.createTextNode(optionalText);
     var newBr = document.createElement("br");
     
-    var newLink = document.createElement("a");
-    var newStateFont = document.createElement("small");
-    newStateFont.appendChild(newState);
+    var newSubHeadingFont = document.createElement("font");
+    newSubHeadingFont.setAttribute('class', 'subheading');
+    newSubHeadingFont.appendChild(newSubHeading);
     
-    newLink.appendChild(newHeading);
-    newLink.appendChild(newStateFont);
-    newLink.appendChild(newBr);
-    newLi.appendChild(newLink);
+    newLi.appendChild(newHeading);
+    newLi.appendChild(newBr);
+    newLi.appendChild(newSubHeadingFont);
     $('#'+lId).append(newLi);    
 }
 
@@ -171,17 +150,20 @@ function addSeperatorToList(lId, sepName){
     $('#'+lId).append(newLi);
 }
 
+/*
+function addLoaderToList(lId) {
+    $.mobile.showPageLoadingMsg("c", "Lade...");
+}
+
+function removeLoaderFromList() {
+	$.mobile.hidePageLoadingMsg();
+}
+*/
+
 function addLoaderToList(lId) {
 	var newLi = document.createElement("li");
-	//newLi.setAttribute('data-role', 'list-divider');
 	newLi.setAttribute('id', 'loadingList');
-	
-	//gif freezes while parsing
-	//var loader = document.createElement("img");
-    //loader.setAttribute('src', 'jquery/mobile/images/ajax-loader-lists.gif');
-    
     var loader = document.createTextNode("Lade...");
-    
     newLi.appendChild(loader);
     $('#'+lId).append(newLi);
 }
@@ -209,4 +191,118 @@ function addEntryToFavouritesList(lawName, lawLink){
     newLawLink.appendChild(newLawHeading);
     newLi.appendChild(newLawLink);
     $('#favouritesOverview').append(newLi);    
+}
+
+function addNextButtonToList(lId, caption) {
+ 	var newLi = document.createElement("li");
+    newLi.setAttribute('id', 'nextButton');
+    newLi.style.display = "block";
+    
+    var newCaption = document.createTextNode(caption);
+    
+    var newLink = document.createElement("a");
+    newLink.setAttribute('data-role', 'button');
+    newLink.setAttribute('data-icon', 'arrow-r');
+    newLink.setAttribute('data-iconpos', 'right');
+ 
+    newLink.appendChild(newCaption);
+    newLi.appendChild(newLink);
+   
+    $('#'+lId).append(newLi);  
+}
+
+function addNavButtonsToParagraph(lId, prevListElement, nextListElement) {
+	var newLi = document.createElement("li");
+	var newDiv = document.createElement("div");
+	newDiv.setAttribute('align', 'center');
+	newDiv.setAttribute('data-role', 'controlgroup');
+	newDiv.setAttribute('data-type', 'horizontal');
+    
+	if (typeof prevListElement !== 'undefined' && prevListElement.length > 0) {
+    	var newCaption = document.createElement('BR');
+    	var newLink = document.createElement("a");
+    	newLink.setAttribute('id', 'prevButton');
+    	newLink.setAttribute('data-role', 'button');
+	    newLink.setAttribute('data-icon', 'arrow-l');
+	    newLink.setAttribute('data-iconpos', 'left');
+	    newLink.appendChild(newCaption);
+    	newDiv.appendChild(newLink);
+	}
+	if (typeof nextListElement !== 'undefined' && nextListElement.length > 0) {
+    	var newCaption = document.createElement('BR');
+    	var newLink = document.createElement("a");
+    	newLink.setAttribute('id', 'nextButton');
+    	newLink.setAttribute('data-role', 'button');
+	    newLink.setAttribute('data-icon', 'arrow-r');
+	    newLink.setAttribute('data-iconpos', 'right');
+	    newLink.appendChild(newCaption);
+    	newDiv.appendChild(newLink);
+	}
+
+    newLi.appendChild(newDiv);
+   
+    $('#'+lId).append(newLi);
+    $('#'+lId).trigger("create");
+    
+    $('#prevButton').click(function(){ prevListElement.trigger('click'); });
+    $('#nextButton').click(function(){ nextListElement.trigger('click'); });
+}
+
+function bindButtonsAndEnterToSearch() {
+	$('#titleSearchButton').click(function(){
+		var searchtext = $('#title-search').attr("value");
+		if(searchtext=="") {
+			alert("Bitte Suchtext angegeben.");
+		} else {
+			$('#searchResult').empty();
+			$.mobile.changePage('#searchResultDiv');
+			fillSearchList("searchResult", "Titel_bmjhome2005", "and", searchtext);
+		}
+	});
+
+	$('#title-search').live('keypress', function(e) {
+	        if(e.keyCode==13){
+				$('#titleSearchButton').trigger('click');
+	        }
+	});
+	
+	$('#textSearchButton').click(function(){
+		var searchtext = $('#text-search').attr("value");
+		if(searchtext=="") {
+			alert("Bitte Suchtext angegeben.");
+		} else {
+			$('#searchResult').empty();
+			$.mobile.changePage('#searchResultDiv');
+			fillSearchList("searchResult", "Gesamt_bmjhome2005", "and", searchtext);
+		}
+	});
+	
+	$('#text-search').live('keypress', function(e) {
+	        if(e.keyCode==13){
+				$('#textSearchButton').trigger('click');
+	        }
+	});
+	
+	$('#directSearchButton').click(function(){
+		var law = $('#law-search').attr("value");
+		var paragraph = $('#paragraph-search').attr("value");
+	                
+		if(law=="") {
+			alert("Bitte Gesetzeskürzel angegeben.");
+		} else {
+			findLawAndParagraph(law, paragraph);
+		}
+	});
+	
+	$('#law-search').live('keypress', function(e) {
+	        if(e.keyCode==13){
+				$('#directSearchButton').trigger('click');
+	        }
+	});
+	
+	$('#paragraph-search').live('keyup', function(e) {
+	        if(e.keyCode==13){
+				$('#directSearchButton').trigger('click');
+	        }
+	});
 }
