@@ -4,8 +4,6 @@ var version = '1.0';
 var displayName = 'Laws';
 var maxSize = 5242880;
 
-var checkDBLawsLog = "wupp";
-
 function errorHandler(transaction, error) {
     alert('Error '+error.message+' (Code '+error.code+')');
     return true; // causes a rollback of the transaction
@@ -17,11 +15,13 @@ function doSomethingHandler(transaction, results) {
 
 function connectToDb(){
     db = openDatabase(shortName, version, displayName, maxSize);
+    console.log("LOG: Connected successful to DB '" + shortName + "'");
+    createTables();
+}
+
+function createTables() {
     db.transaction(
-                   function(transaction) {
-                   /*transaction.executeSql(
-                                          'DROP TABLE sub_paragraphs;'
-                                          );*/
+           function(transaction) {
                    transaction.executeSql(
                                           'CREATE TABLE IF NOT EXISTS laws ' +
                                           ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
@@ -58,55 +58,114 @@ function connectToDb(){
                                           ' lawName TEXT NOT NULL, ' +
                                           ' link TEXT NOT NULL );'
                                           );
-                   
-                   }
-                   );
-    console.log("LOG: Connected successful to DB '" + shortName + "'");
+                   transaction.executeSql(
+                                          'CREATE TABLE IF NOT EXISTS settings ' +
+                                          ' (id TEXT NOT NULL PRIMARY KEY, ' +
+                                          ' value INTEGER NOT NULL);'
+                                          );  
+                   transaction.executeSql(
+                                          'INSERT OR IGNORE INTO settings (id, value) VALUES (?, ?);', 
+                                          ['size', 2], 
+                                          doSomethingHandler, 
+                                          errorHandler
+                                          ); 
+                   transaction.executeSql(
+                                          'INSERT OR IGNORE INTO settings (id, value) VALUES (?, ?);', 
+                                          ['caching', 1], 
+                                          doSomethingHandler, 
+                                          errorHandler
+                                          ); 
+                   transaction.executeSql(
+                                          'INSERT OR IGNORE INTO settings (id, value) VALUES (?, ?);', 
+                                          ['cachingDuration', 7], 
+                                          doSomethingHandler, 
+                                          errorHandler
+                                          ); 
+                }
+         );
+}
+
+function clearCacheTables() {
+    db.transaction(
+           function(transaction) {
+				transaction.executeSql('DROP TABLE laws;');
+				transaction.executeSql('DROP TABLE paragraphs;');
+				transaction.executeSql('DROP TABLE sub_paragraphs;');
+			}
+	);
+	createTables();
+}
+
+function clearFavTable() {
+    db.transaction(
+           function(transaction) {
+				transaction.executeSql('DROP TABLE favourites;');
+			}
+	);
+	createTables();
 }
 
 function saveLaw(first_letter, name, description, link){
-    var date = new Date();
-    db.transaction(
-                   function(transaction) {
-                   transaction.executeSql(
-                                          'INSERT INTO laws (first_letter, name, description, link, date) VALUES (?, ?, ?, ?, ?);', 
-                                          [first_letter, name, description, link, date], 
-                                          doSomethingHandler, 
-                                          errorHandler
-                                          );
-                   }
-                   );
-    //console.log("Law entry " + name + " saved");
+	var caching = 1;
+    getSetting('caching', function(result){
+		caching = result.rows.item(0).value;
+		if(caching==1) {
+		    var date = new Date();
+		    db.transaction(
+		                   function(transaction) {
+		                   transaction.executeSql(
+		                                          'INSERT INTO laws (first_letter, name, description, link, date) VALUES (?, ?, ?, ?, ?);', 
+		                                          [first_letter, name, description, link, date], 
+		                                          doSomethingHandler, 
+		                                          errorHandler
+		                                          );
+		                   }
+		                   );
+		    //console.log("Law entry " + name + " saved");
+		}
+	});
 }
 
 function saveParagraph(lawName, name, link, p_link, seperator){
-    var date = new Date();
-    db.transaction(
-                   function(transaction) {
-                   transaction.executeSql(
-                                          'INSERT INTO paragraphs (lawName, name, link, p_link, seperator, date) VALUES (?, ?, ?, ?, ?, ?);', 
-                                          [lawName, name, link, p_link, seperator, date], 
-                                          doSomethingHandler, 
-                                          errorHandler
-                                          );
-                   }
-                   );
-    //console.log("Paragraph entry " + name + " saved");
+	var caching = 1;
+    getSetting('caching', function(result){
+		caching = result.rows.item(0).value;
+		if(caching==1) {
+		    var date = new Date();
+		    db.transaction(
+		                   function(transaction) {
+		                   transaction.executeSql(
+		                                          'INSERT INTO paragraphs (lawName, name, link, p_link, seperator, date) VALUES (?, ?, ?, ?, ?, ?);', 
+		                                          [lawName, name, link, p_link, seperator, date], 
+		                                          doSomethingHandler, 
+		                                          errorHandler
+		                                          );
+		                   }
+		                   );
+		    //console.log("Paragraph entry " + name + " saved");
+		}
+	});
 }
 
 function saveSubParagraph(lawName, paragraph, text){
-    var date = new Date();
-    db.transaction(
-                   function(transaction) {
-                   transaction.executeSql(
-                                          'INSERT INTO sub_paragraphs (lawName, paragraph, text, date) VALUES (?, ?, ?, ?);', 
-                                          [lawName, paragraph, text, date], 
-                                          doSomethingHandler, 
-                                          errorHandler
-                                          );
-                   }
-                   );
-    //console.log("SubParagraph ('" + paragraph + "') entry " + text + " saved");
+	var caching = 1;
+    getSetting('caching', function(result){
+		caching = result.rows.item(0).value;
+		if(caching==1) {
+		    var date = new Date();
+		    db.transaction(
+		                   function(transaction) {
+		                   transaction.executeSql(
+		                                          'INSERT INTO sub_paragraphs (lawName, paragraph, text, date) VALUES (?, ?, ?, ?);', 
+		                                          [lawName, paragraph, text, date], 
+		                                          doSomethingHandler, 
+		                                          errorHandler
+		                                          );
+		                   }
+		                   );
+		    //console.log("SubParagraph ('" + paragraph + "') entry " + text + " saved");
+		}
+	});
 }
 
 function saveFavourite(){
@@ -142,9 +201,9 @@ function saveFavourite(){
             console.log("Favourite '" + lawName + "' saved");
             favButton.setAttribute('style', 'color: #f18b08;');
         }
+        $('#favouritesOverview').empty();
+    	fillFavouritesList();
     });
-    $('#favouritesOverview').empty();
-    fillFavouritesList();
 }
 
 /*function printLaws(transaction, result){
@@ -226,120 +285,159 @@ function getFavourites(callBack){
 }
 
 function checkDBLaws(first_letter, callBack){
-    db.transaction(
-                   function(transaction) {
-                        transaction.executeSql(
-                                          'SELECT name, date FROM laws WHERE first_letter = ? LIMIT 1;', [first_letter],
-                                          function(transaction, result){ 
-                                            var date = new Date();
-                                            var time = date.getTime;
-                                            for (var i=0; i < result.rows.length; i++) {
-                                                var row = result.rows.item(i);
-                                                var entryDate = new Date(row.date);
-                                                time = entryDate.getTime();
-                                                //console.log("name: " + row.name + time);
-                                            }
-                                          
-                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
-                                                    db.transaction(
-                                                                     function(transaction) {
-                                                                     transaction.executeSql(
-                                                                                            'DELETE FROM laws WHERE first_letter = ?;', [first_letter],
-                                                                                            function(transaction, result){ 
-                                                                                                console.log("cleared cache.");
-                                                                                            }
-                                                                                            )
-                                                                     }
-                                                                   );
-                                                    console.log("Laws: no entries in DB or entries are not up to date.");
-                                                    callBack(false);
-                                           } else {
-                                                console.log("Laws: entries in DB, entries are up to date.");
-                                                callBack(true);
-                                           }
-                                          },
-                                          errorHandler
-                                          );
-                    }
-                   ); 
+	var caching = 1;
+    getSetting('caching', function(result){
+		caching = result.rows.item(0).value;
+		if(caching==0) {
+			callBack(false);
+		} else {
+		    db.transaction(
+		                   function(transaction) {
+		                        transaction.executeSql(
+		                                          'SELECT name, date FROM laws WHERE first_letter = ? LIMIT 1;', [first_letter],
+		                                          function(transaction, result){ 
+		                                            var date = new Date();
+		                                            var time = date.getTime;
+		                                            for (var i=0; i < result.rows.length; i++) {
+		                                                var row = result.rows.item(i);
+		                                                var entryDate = new Date(row.date);
+		                                                time = entryDate.getTime();
+		                                                //console.log("name: " + row.name + time);
+		                                            }
+		                                          
+		                                          var daysCached = 7;
+		                                          getSetting('cachingDuration', function(result){
+		                                          	daysCached = result.rows.item(0).value;
+		                                          });
+		                                          
+		                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*daysCached)) {
+		                                                    db.transaction(
+		                                                                     function(transaction) {
+		                                                                     transaction.executeSql(
+		                                                                                            'DELETE FROM laws WHERE first_letter = ?;', [first_letter],
+		                                                                                            function(transaction, result){ 
+		                                                                                                console.log("cleared cache.");
+		                                                                                            }
+		                                                                                            )
+		                                                                     }
+		                                                                   );
+		                                                    console.log("Laws: no entries in DB or entries are not up to date.");
+		                                                    callBack(false);
+		                                           } else {
+		                                                console.log("Laws: entries in DB, entries are up to date.");
+		                                                callBack(true);
+		                                           }
+		                                          },
+		                                          errorHandler
+		                                          );
+		                    }
+		                   ); 
+		}
+	});
 }
 
 function checkDBParagraphs(lawName, callBack){
-    db.transaction(
-                   function(transaction) {
-                   transaction.executeSql(
-                                          'SELECT name, date FROM paragraphs WHERE lawName = ? LIMIT 1;', [lawName],
-                                          function(transaction, result){ 
-                                              var date = new Date();
-                                              var time = date.getTime;
-                                              for (var i=0; i < result.rows.length; i++) {
-                                              var row = result.rows.item(i);
-                                              var entryDate = new Date(row.date);
-                                              time = entryDate.getTime();
-                                              //console.log("name: " + row.name + time);
-                                          }
-                                          
-                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
-                                          db.transaction(
-                                                         function(transaction) {
-                                                         transaction.executeSql(
-                                                                                'DELETE FROM paragraphs WHERE lawName = ?;', [lawName],
-                                                                                function(transaction, result){ 
-                                                                                console.log("cleared cache.");
-                                                                                }
-                                                                                )
-                                                         }
-                                                         );
-                                          console.log("Paragraphs: no entries in DB or entries are not up to date.");
-                                          callBack(false);
-                                          } else {
-                                          console.log("Paragraphs: entries in DB, entries are up to date.");
-                                          callBack(true);
-                                          }
-                                          },
-                                          errorHandler
-                                          );
-                   }
-                   ); 
+	var caching = 1;
+    getSetting('caching', function(result){
+		caching = result.rows.item(0).value;
+		if(caching==0) {
+			callBack(false);
+		} else {
+		    db.transaction(
+		                   function(transaction) {
+		                   transaction.executeSql(
+		                                          'SELECT name, date FROM paragraphs WHERE lawName = ? LIMIT 1;', [lawName],
+		                                          function(transaction, result){ 
+		                                              var date = new Date();
+		                                              var time = date.getTime;
+		                                              for (var i=0; i < result.rows.length; i++) {
+		                                              var row = result.rows.item(i);
+		                                              var entryDate = new Date(row.date);
+		                                              time = entryDate.getTime();
+		                                              //console.log("name: " + row.name + time);
+		                                          }
+		                                          
+		                                          var daysCached = 7;
+		                                          getSetting('cachingDuration', function(result){
+		                                          	daysCached = result.rows.item(0).value;
+		                                          });
+		                                          
+		                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*daysCached)) {
+		                                          db.transaction(
+		                                                         function(transaction) {
+		                                                         transaction.executeSql(
+		                                                                                'DELETE FROM paragraphs WHERE lawName = ?;', [lawName],
+		                                                                                function(transaction, result){ 
+		                                                                                console.log("cleared cache.");
+		                                                                                }
+		                                                                                )
+		                                                         }
+		                                                         );
+		                                          console.log("Paragraphs: no entries in DB or entries are not up to date.");
+		                                          callBack(false);
+		                                          } else {
+		                                          console.log("Paragraphs: entries in DB, entries are up to date.");
+		                                          callBack(true);
+		                                          }
+		                                          },
+		                                          errorHandler
+		                                          );
+		                   }
+		                   ); 
+		}
+	});
 }
 
 function checkDBSubParagraphs(lawName, paragraph, callBack){
-    db.transaction(
-                   function(transaction) {
-                   transaction.executeSql(
-                                          'SELECT date FROM sub_paragraphs WHERE lawName = ? AND paragraph = ? LIMIT 1;', [lawName, paragraph],
-                                          function(transaction, result){ 
-                                              var date = new Date();
-                                              var time = date.getTime;
-                                              for (var i=0; i < result.rows.length; i++) {
-                                              var row = result.rows.item(i);
-                                              var entryDate = new Date(row.date);
-                                              time = entryDate.getTime();
-                                              //console.log("name: " + row.name + time);
-                                          }
-                                          
-                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*7)) {
-                                          db.transaction(
-                                                         function(transaction) {
-                                                         transaction.executeSql(
-                                                                                'DELETE FROM sub_paragraphs WHERE lawName = ? AND paragraph = ?;', [lawName, paragraph],
-                                                                                function(transaction, result){ 
-                                                                                console.log("cleared cache.");
-                                                                                }
-                                                                                )
-                                                         }
-                                                         );
-                                          console.log("SubParagraphs: no entries in DB or entries are not up to date.");
-                                          callBack(false);
-                                          } else {
-                                          console.log("SubParagraphs: entries in DB, entries are up to date.");
-                                          callBack(true);
-                                          }
-                                          },
-                                          errorHandler
-                                          );
-                   }
-                   ); 
+	var caching = 1;
+    getSetting('caching', function(result){
+		caching = result.rows.item(0).value;
+		if(caching==0) {
+			callBack(false);
+		} else {
+		    db.transaction(
+		                   function(transaction) {
+		                   transaction.executeSql(
+		                                          'SELECT date FROM sub_paragraphs WHERE lawName = ? AND paragraph = ? LIMIT 1;', [lawName, paragraph],
+		                                          function(transaction, result){ 
+		                                              var date = new Date();
+		                                              var time = date.getTime;
+		                                              for (var i=0; i < result.rows.length; i++) {
+		                                              var row = result.rows.item(i);
+		                                              var entryDate = new Date(row.date);
+		                                              time = entryDate.getTime();
+		                                              //console.log("name: " + row.name + time);
+		                                          }
+		                                          
+		                                          var daysCached = 7;
+		                                          getSetting('cachingDuration', function(result){
+		                                          	daysCached = result.rows.item(0).value;
+		                                          });
+		                                          
+		                                          if(result.rows.length == 0 || (date.getTime() - time) > (1000*60*60*24*daysCached)) {
+		                                          db.transaction(
+		                                                         function(transaction) {
+		                                                         transaction.executeSql(
+		                                                                                'DELETE FROM sub_paragraphs WHERE lawName = ? AND paragraph = ?;', [lawName, paragraph],
+		                                                                                function(transaction, result){ 
+		                                                                                console.log("cleared cache.");
+		                                                                                }
+		                                                                                )
+		                                                         }
+		                                                         );
+		                                          console.log("SubParagraphs: no entries in DB or entries are not up to date.");
+		                                          callBack(false);
+		                                          } else {
+		                                          console.log("SubParagraphs: entries in DB, entries are up to date.");
+		                                          callBack(true);
+		                                          }
+		                                          },
+		                                          errorHandler
+		                                          );
+		                   }
+		                   ); 
+		}
+	});
 }
 
 function checkDBFavourites(lawName, callBack){
@@ -362,6 +460,35 @@ function checkDBFavourites(lawName, callBack){
                    ); 
 }
 
+function saveSetting(settingId, value){
+    db.transaction(
+                   function(transaction) {
+                   			transaction.executeSql(
+                                          'DELETE FROM settings WHERE id=?;', 
+                                          [settingId], 
+                                          doSomethingHandler, 
+                                          errorHandler
+                            );
+                   			transaction.executeSql(
+                                          'INSERT INTO settings (id, value) VALUES (?, ?);', 
+                                          [settingId, value], 
+                                          doSomethingHandler, 
+                                          errorHandler
+                            );
+                   }
+                   );
+}
 
-
-
+function getSetting(settingId, callBack){
+    db.transaction(
+                   function(transaction) {
+                   transaction.executeSql(
+                                          'SELECT value FROM settings WHERE id = ?;', [settingId],
+                                          function(transaction, result){ 
+                                            callBack(result);
+                                          },
+                                          errorHandler
+                                          );
+                   }
+                   ); 
+}
