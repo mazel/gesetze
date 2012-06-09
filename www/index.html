@@ -15,7 +15,7 @@
 	-->
 
 	<!-- If your application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
-	<script type="text/javascript" charset="utf-8" src="cordova-1.7.0.js"></script>
+	<script type="text/javascript" charset="utf-8" src="cordova-1.8.0.js"></script>
 	<script type="text/javascript" charset="utf-8" src="jquery/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" charset="utf-8" src="mobileinit.js"></script>
     <script type="text/javascript" charset="utf-8" src="jquery/mobile/jquery.mobile-1.1.0.min.js"></script>
@@ -26,6 +26,7 @@
   </head>
   
   <body onload="onBodyLoad()">
+  
   
         <!-- H O M E  S C R E E N  -->
         <div data-role="page" id="home">
@@ -40,14 +41,6 @@
               <a href="#configDiv" id="configButton" data-role="button">Einstellungen</a>
             </div>
         </div>
-        
-        <!-- (empty) starting page to avoid showing scaling effect -->
-  		<!-- HOME will be shown after viewport scale is set -->
-  		<div data-role="page" id="start">
-  			<!-- <div style="position: absolute; top: 50%; left: 50%; margin-top: -50px; margin-left: -90px ;">
-  				<h1 align="center">Gesetze App</h1>
-    		</div> -->
-  		</div>
         
                 <!-- C H A R   O V E R V I E W  -->
                 <div data-role="page" id="charsOverviewDiv">

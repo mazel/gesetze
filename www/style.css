@@ -40,13 +40,6 @@ div #aboutDiv a {
     white-space:normal;
 }
 
-.favState {
-    float: right;
-    font-size: 70%; 
-    font-style: normal; 
-    padding: 0px;
-}
-
 a #favButton {
     color: #333333;
 }

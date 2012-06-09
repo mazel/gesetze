@@ -30,6 +30,10 @@ function fillLawsList(char, lId, header, address) {
 	
 	addLoaderToList(lId);	
 	$('#'+lId).listview("refresh");
+	
+	var link;
+    var title;
+    var abbr;
     
 	//Check Cache
     checkDBLaws(char, function(inCache){
@@ -38,8 +42,9 @@ function fillLawsList(char, lId, header, address) {
             console.log("Filling List from Cache.");
                 //alert("Filling List from Cache.");
                 getLawsByFirst_Letter(char, function(result){
+                	var row;
                     for (var i=0; i < result.rows.length; i++) {
-                        var row = result.rows.item(i);
+                        row = result.rows.item(i);
             
                         link = row.link;
                         title = row.description;
@@ -109,14 +114,19 @@ function fillParagraphsList(lawName, link, lId, header, address) {
 	addLoaderToList(lId);	
 	$('#'+lId).listview("refresh");
 	
+	var title;
+    var paragraphLink;
+    var text;
+	
     //Check Cache
     checkDBParagraphs(lawName, function(inCache){
         console.log("inCache:" + inCache);
         if(inCache){
             console.log("Filling List from Cache.");
             getParagraphsByLaw(lawName, function(result){
+            	var row;
                 for (var i=0; i < result.rows.length; i++) {
-                    var row = result.rows.item(i);
+                    row = result.rows.item(i);
                     title = row.name;
                     paragraphLink = row.p_link;
                     if(row.seperator=="true"){
@@ -195,20 +205,23 @@ function fillParagraph(title, lawLink, paragraphLink, lId, header, lawName, prev
 	
 	var link = lawLink.substring(lawLink.indexOf('/'), lawLink.lastIndexOf('/')+1)+paragraphLink;
 	
+	var text;
+	
     //Check Cache
     checkDBSubParagraphs(lawName, title, function(inCache){
                       console.log("inCache:" + inCache);
                       if(inCache){
                           console.log("Filling List from Cache.");
                           getSubParagraphsByLawAndParagraph(lawName, title, function(result){
+                          					addNavButtonsToParagraph(lId, prevListElement, nextListElement);
+                          
+                          					var row;
                                              for (var i=0; i < result.rows.length; i++) {
-                                                 var row = result.rows.item(i);
+                                                 row = result.rows.item(i);
                                                  text = row.text;
                                                  addEntryToParagraph(lId, text);
                                                  //console.log("Added SubPara from Cache: " +text);
                                              }
-                                             
-                                             addNavButtonsToParagraph(lId, prevListElement, nextListElement);
                                              
                                              //refresh listview for correct rendering
                                              removeLoaderFromList();
@@ -226,15 +239,14 @@ function fillParagraph(title, lawLink, paragraphLink, lId, header, lawName, prev
                         $.ajax({ 
                             url: 'http://www.gesetze-im-internet.de'+link,
                             success: function(data) {
+                            			addNavButtonsToParagraph(lId, prevListElement, nextListElement);
                                         //blockiert die gesamte app (javascript läuft in einem einzigen thread)
                                         $(data).find('div.jurAbsatz').each(function() {
-                                            entry = $(this).text();
-                                            addEntryToParagraph(lId, entry);
-                                            saveSubParagraph(lawName, title, entry);                               
+                                            text = $(this).text();
+                                            addEntryToParagraph(lId, text);
+                                            saveSubParagraph(lawName, title, text);                               
                                             //console.log("title: " + title + ", lawLink: " + lawLink + ", paragraphLink: " + paragraphLink + ", lId: " + lId + ", header: " + header + ", lawName: " + lawName);
                                         });
-                                        
-                                        addNavButtonsToParagraph(lId, prevListElement, nextListElement);
                                         
                                         //refresh listview for correct rendering
                                         removeLoaderFromList();
@@ -262,10 +274,14 @@ function fillFavouritesList(){
     addLoaderToList("favouritesOverview");	
 	$('#favouritesOverview').listview("refresh");
     console.log("Getting favourites from DB.");
-    var lawName, link;
+    
+    var lawName;
+    var link;
+    
     getFavourites(function(result){
+    			var row;
               for (var i=0; i < result.rows.length; i++) {
-                  var row = result.rows.item(i);
+                  row = result.rows.item(i);
                   lawName = row.lawName;
                   link = row.link;
                   addEntryToFavouritesList(lawName, link);
@@ -280,6 +296,11 @@ function fillFavouritesList(){
 function fillSearchList(lId, config, method, words, optionalLink) {
 	addLoaderToList(lId);	
 	$('#'+lId).listview("refresh");
+	
+	var link;
+	var title;
+	var text;
+	var lawLink;
 	
 	// http://www.gesetze-im-internet.de/cgi-bin/htsearch?config=Gesamt_bmjhome2005&method=and&words=b%FCrger+einkommen
 	
@@ -343,9 +364,12 @@ function fillSearchList(lId, config, method, words, optionalLink) {
 function findLawAndParagraph(law, paragraph) {
 	// http://www.gesetze-im-internet.de/cgi-bin/htsearch?config=Gesamt_bmjhome2005&method=and&words=b%FCrger+einkommen
 	
-	words = law.replace(" ", "+");
+	var words = law.replace(" ", "+");
 	words = escape(words);
-	link = "/cgi-bin/htsearch?config=Titel_bmjhome2005&method=and&words="+words;
+	var link = "/cgi-bin/htsearch?config=Titel_bmjhome2005&method=and&words="+words;
+	
+	var result;
+	var title;
 	
 	//suche nach kuerzel um link zum gesetz zu finden
 	$.ajax({ 
