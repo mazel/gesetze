@@ -1,7 +1,5 @@
 function onBodyLoad()
 {	
-	// go to start page first without keeping it in browser history
-	$.mobile.changePage('#start', {reverse: false, changeHash: false});
     document.addEventListener("deviceready", onDeviceReady, false);
 }
 
@@ -19,15 +17,15 @@ function onDeviceReady()
     
 	bindButtonsAndEnterToSearch();
 	
-	$('#favouritesButton').tap(function(){ createFavouritesList() });
+	$('#favouritesButton').click(function(){ createFavouritesList(); });
 	
 	//alle gesetze anzeigen ist zu unperformant, viel zu große liste -> vorauswahl des anfangszeichens
     createCharsList();
     
-    //now set the scale size and go to home keeping it in browser history since the actual first page was #home already
+    //now set the scale size and go to home
     getSetting('size', function(result){
 		setInterfaceSize(result.rows.item(0).value);
-		$.mobile.changePage('#home', {reverse: false, changeHash: false});
+		$.mobile.initializePage();
 	});
 }
 
@@ -83,10 +81,12 @@ function createParagraph(title, lawLink, paragraphLink, lawName, prevListElement
 
 function createFavouritesList(){
     $('#favouritesOverview').empty();
+    $.mobile.changePage('#favouritesDiv');
     fillFavouritesList();
 }
 
 function addEntryToLawsList(lId, lawName, subHeading, lawLink){
+	
     var newLi = document.createElement("li");
     newLi.setAttribute('class', 'lawButton');
     newLi.setAttribute('lawName', lawName);
@@ -99,11 +99,8 @@ function addEntryToLawsList(lId, lawName, subHeading, lawLink){
     var newLawSubHeadingFont = document.createElement("font");
     newLawSubHeadingFont.setAttribute('class', 'subheading');
     newLawSubHeadingFont.appendChild(newLawSubHeading);
-    var newLawStateDiv = document.createElement("div");
-    newLawStateDiv.setAttribute('class', 'favState');
     
     newLi.appendChild(newLawHeading);
-    newLi.appendChild(newLawStateDiv);
     newLi.appendChild(newBr);
     newLi.appendChild(newLawSubHeadingFont);
     $('#'+lId).append(newLi);    
@@ -111,7 +108,7 @@ function addEntryToLawsList(lId, lawName, subHeading, lawLink){
 
 function addEntryToParagraphsList(lId, paragraph, lawLink, paragraphLink, optionalText){
 	optionalText = typeof optionalText !== 'undefined' ? optionalText : "";
-
+	
     var newLi = document.createElement("li");
     newLi.setAttribute('class', 'paragraphButton');
     newLi.setAttribute('id', 'paragraphLi');
