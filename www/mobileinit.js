@@ -5,6 +5,7 @@ $(document).bind("mobileinit", function(){
     
 	$.mobile.defaultPageTransition = 'none';
 	$.mobile.defaultDialogTransition = 'none';
+	$.mobile.autoInitializePage = false;
 	
 	//erlaube cross-domain-calls
 	$.mobile.allowCrossDomainPages = true;
